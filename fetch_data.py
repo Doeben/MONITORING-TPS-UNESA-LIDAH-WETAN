@@ -3,70 +3,71 @@ import json
 import urllib.request
 import ssl
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
-# Membaca URL rahasia dari GitHub Secrets
 API_URL = os.environ.get('MONACOLISA_API_URL')
 
 if not API_URL:
-    print("❌ ERROR: Secret 'MONACOLISA_API_URL' tidak ditemukan!")
+    print("❌ ERROR: Secret MONACOLISA_API_URL tidak ditemukan!")
     exit(1)
 
-today = datetime.now().strftime('%Y-%m-%d')
-
-if "tanggal=" in API_URL:
-    full_url = re.sub(r'tanggal=[\d-]+', f'tanggal={today}', API_URL)
+# Paksa parameter limit=200 agar menarik data 1 hari penuh (bukan cuma 10 data)
+clean_url = API_URL
+if "limit=" in clean_url:
+    clean_url = re.sub(r'limit=\d+', 'limit=200', clean_url)
 else:
-    full_url = f"{API_URL}&tanggal={today}"
+    clean_url += "&limit=200"
 
-print(f"🔄 Mengambil data telemetri Monacolisa untuk tanggal {today}...")
+clean_url = re.sub(r'&tanggal=[\d-]+', '', clean_url)
+clean_url = re.sub(r'\?tanggal=[\d-]+&?', '?', clean_url)
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-try:
-    req = urllib.request.Request(
-        full_url,
-        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-    )
-    with urllib.request.urlopen(req, context=ctx, timeout=30) as response:
-        if response.status == 200:
-            raw_data = response.read().decode('utf-8')
-            new_json = json.loads(raw_data)
-            new_list = new_json.get('data', [])
+combined_map = {}
 
-            # Membaca data lama jika sudah ada (agar riwayat hari sebelumnya disimpan)
-            existing_data = []
-            if os.path.exists('data.json'):
-                try:
-                    with open('data.json', 'r', encoding='utf-8') as f:
-                        old_json = json.load(f)
-                        existing_data = old_json.get('data', [])
-                except Exception:
-                    existing_data = []
-
-            # Penggabungan data & eliminasi duplikat berdasarkan timestamp
-            combined_map = {item['timestamp']: item for item in existing_data}
-            for item in new_list:
+# Mencegah riwayat lama hilang (akumulasi data)
+if os.path.exists('data.json'):
+    try:
+        with open('data.json', 'r', encoding='utf-8') as f:
+            old_json = json.load(f)
+            for item in old_json.get('data', []):
                 combined_map[item['timestamp']] = item
+    except Exception:
+        pass
 
-            # Urutkan data dari yang paling baru
-            sorted_data = sorted(combined_map.values(), key=lambda x: x['timestamp'], reverse=True)
+today = datetime.now()
+print("🔄 Mengambil data telemetri Monacolisa 14 hari terakhir...")
 
-            final_output = {
-                "status": "success",
-                "total": len(sorted_data),
-                "data": sorted_data
-            }
+# Tarik data 14 hari ke belakang
+for i in range(14):
+    date_str = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+    separator = '&' if '?' in clean_url else '?'
+    target_url = f"{clean_url}{separator}tanggal={date_str}"
+    
+    try:
+        req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as resp:
+            if resp.status == 200:
+                raw_data = resp.read().decode('utf-8')
+                res_json = json.loads(raw_data)
+                items = res_json.get('data', [])
+                for item in items:
+                    combined_map[item['timestamp']] = item
+                print(f"  └─ Tanggal {date_str}: Sukses ({len(items)} data)")
+    except Exception as e:
+        print(f"  └─ Tanggal {date_str}: Gagal ({e})")
 
-            with open('data.json', 'w', encoding='utf-8') as f:
-                json.dump(final_output, f, indent=4)
-                
-            print(f"✅ BERHASIL! Total {len(sorted_data)} data telemetri tersimpan di data.json")
-        else:
-            print(f"❌ HTTP Error: {response.status}")
-            exit(1)
-except Exception as e:
-    print(f"❌ ERROR: {e}")
-    exit(1)
+sorted_data = sorted(combined_map.values(), key=lambda x: x['timestamp'], reverse=True)
+
+final_output = {
+    "status": "success",
+    "total": len(sorted_data),
+    "data": sorted_data
+}
+
+with open('data.json', 'w', encoding='utf-8') as f:
+    json.dump(final_output, f, indent=4)
+
+print(f"✅ SELESAI! Total {len(sorted_data)} data riwayat tersimpan di data.json")
