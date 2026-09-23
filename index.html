@@ -24,8 +24,22 @@
                 <p class="text-sm text-blue-200 mt-1">Perangkat: <span class="font-mono bg-blue-950 px-2 py-0.5 rounded text-white">860987054243453</span> | SPM32 3-Phase Meter</p>
             </div>
             <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
-                <p class="text-xs text-blue-100">Total Record</p>
-                <p class="text-2xl font-bold">51 Data</p>
+                <p class="text-xs text-blue-100">Total Record Ditampilkan</p>
+                <p class="text-2xl font-bold" id="total-records">0 Data</p>
+            </div>
+        </div>
+
+        <!-- BARIS FILTER TANGGAL -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-sm font-bold text-gray-700">Filter Tanggal Telemetri:</span>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <input type="date" id="date-picker" value="2026-09-22" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-medium w-full sm:w-auto">
+                <button id="btn-filter" class="bg-blue-800 hover:bg-blue-900 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap">
+                    Tampilkan Data
+                </button>
             </div>
         </div>
 
@@ -103,8 +117,8 @@
                     <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri Listrik</h2>
                     <p class="text-xs text-gray-500">Log Pengukuran 3 Phase secara terperinci</p>
                 </div>
-                <div class="text-xs bg-gray-100 px-3 py-1.5 rounded-lg text-gray-600 font-medium">
-                    Tanggal: <span class="text-gray-900 font-bold">2026-09-22</span>
+                <div class="text-xs bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg font-semibold border border-blue-200">
+                    Tanggal Terpilih: <span id="label-selected-date" class="font-bold">2026-09-22</span>
                 </div>
             </div>
 
@@ -136,7 +150,7 @@
     </div>
 
     <script>
-        // Data Telemetri JSON
+        // Database Telemetri JSON
         const rawTelemetryData = [
             {
                 "timestamp": "20260922235431",
@@ -250,6 +264,9 @@
             }
         ];
 
+        // Global Chart instances untuk dipembaruan (destroy & recreate)
+        let chartV, chartI, chartTHD, chartFPF;
+
         function formatJam(ts) {
             if (!ts || ts.length < 14) return ts;
             return `${ts.substring(8,10)}:${ts.substring(10,12)}`;
@@ -260,13 +277,37 @@
             return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
-        function initDashboard() {
-            // Urutkan data secara kronologis (lama ke baru) untuk grafik
-            const chartData = [...rawTelemetryData].reverse();
-            const labels = chartData.map(d => formatJam(d.timestamp));
+        function filterAndRenderData() {
+            const selectedDateInput = document.getElementById('date-picker').value; // Contoh: "2026-09-22"
+            const formattedFilterDate = selectedDateInput.replace(/-/g, ''); // Jadi: "20260922"
+
+            document.getElementById('label-selected-date').innerText = selectedDateInput;
+
+            // Filter data berdasarkan prefix tanggal YYYYMMDD
+            const filteredData = rawTelemetryData.filter(d => d.timestamp.startsWith(formattedFilterDate));
+
+            document.getElementById('total-records').innerText = `${filteredData.length} Data`;
+
+            // Jika data kosong pada tanggal tersebut
+            if (filteredData.length === 0) {
+                document.getElementById('card-voltage').innerText = "0 V";
+                document.getElementById('card-current').innerText = "0 A";
+                document.getElementById('card-freq').innerText = "0 Hz";
+                document.getElementById('card-pf').innerText = "0";
+
+                document.getElementById('telemetry-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-gray-500 font-semibold">
+                            ⚠️ Tidak ada data telemetri ditemukan untuk tanggal <span class="text-blue-600">${selectedDateInput}</span>.
+                        </td>
+                    </tr>
+                `;
+                renderCharts([]);
+                return;
+            }
 
             // Populate Cards (Data Terbaru)
-            const latest = rawTelemetryData[0].measurement;
+            const latest = filteredData[0].measurement;
             const avgV = ((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c) / 3).toFixed(1);
             const avgI = ((latest.current_a.a + latest.current_a.b + latest.current_a.c) / 3).toFixed(2);
 
@@ -275,65 +316,10 @@
             document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
             document.getElementById('card-pf').innerText = latest.power_factor.total;
 
-            // 1. Grafik Tegangan
-            new Chart(document.getElementById('chartVoltage'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Phase A (V)', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'Phase B (V)', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'Phase C (V)', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // 2. Grafik Arus
-            new Chart(document.getElementById('chartCurrent'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Phase A (A)', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'Phase B (A)', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'Phase C (A)', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // 3. Grafik THD Tegangan
-            new Chart(document.getElementById('chartTHD'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'THD A (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'THD B (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'THD C (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.c), borderColor: '#f43f5e', tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // 4. Grafik Frekuensi & PF
-            new Chart(document.getElementById('chartFreqPF'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement.frequency_hz), borderColor: '#d97706', tension: 0.3 },
-                        { label: 'Power Factor', data: chartData.map(d => d.measurement.power_factor.total), borderColor: '#9333ea', tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
             // Populate Tabel Data
             const tbody = document.getElementById('telemetry-table-body');
             tbody.innerHTML = '';
-            rawTelemetryData.forEach(item => {
+            filteredData.forEach(item => {
                 const m = item.measurement;
                 const row = document.createElement('tr');
                 row.className = "hover:bg-blue-50/50 transition-colors duration-150";
@@ -362,9 +348,82 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Render Grafik
+            renderCharts(filteredData);
         }
 
-        document.addEventListener("DOMContentLoaded", initDashboard);
+        function renderCharts(dataArray) {
+            // Hapus chart lama jika ada
+            if (chartV) chartV.destroy();
+            if (chartI) chartI.destroy();
+            if (chartTHD) chartTHD.destroy();
+            if (chartFPF) chartFPF.destroy();
+
+            const chartData = [...dataArray].reverse(); // Urutkan dari jam terkecil ke terbesar
+            const labels = chartData.map(d => formatJam(d.timestamp));
+
+            // 1. Grafik Tegangan
+            chartV = new Chart(document.getElementById('chartVoltage'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Phase A (V)', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'Phase B (V)', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'Phase C (V)', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Grafik Arus
+            chartI = new Chart(document.getElementById('chartCurrent'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Phase A (A)', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'Phase B (A)', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'Phase C (A)', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 3. Grafik THD
+            chartTHD = new Chart(document.getElementById('chartTHD'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'THD A (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'THD B (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'THD C (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. Grafik Frekuensi & PF
+            chartFPF = new Chart(document.getElementById('chartFreqPF'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement.frequency_hz), borderColor: '#d97706', tension: 0.3 },
+                        { label: 'Power Factor', data: chartData.map(d => d.measurement.power_factor.total), borderColor: '#9333ea', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Event Listener untuk Tombol Filter Tanggal
+        document.getElementById('btn-filter').addEventListener('click', filterAndRenderData);
+
+        // Inisialisasi awal saat halaman dibuka
+        document.addEventListener("DOMContentLoaded", filterAndRenderData);
     </script>
 </body>
 </html>
