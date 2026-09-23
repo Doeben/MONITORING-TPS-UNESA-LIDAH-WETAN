@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MONITORING TPS UNESA LIDAH WETAN</title>
-    <!-- Tailwind CSS untuk Desain Modern & Responsive -->
+    <!-- Tailwind CSS untuk Desain -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js untuk Grafik Interaktif -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-3 md:p-6">
 
@@ -19,16 +21,16 @@
                     <span class="text-xs font-semibold uppercase tracking-wider text-blue-200">System Live Telemetry</span>
                 </div>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">MONITORING TPS UNESA LIDAH WETAN</h1>
-                <p class="text-sm text-blue-200 mt-1">Perangkat: <span class="font-mono bg-blue-950 px-2 py-0.5 rounded text-white" id="device-imei">860987054243453</span> | SPM32 3-Phase Meter</p>
+                <p class="text-sm text-blue-200 mt-1">Perangkat: <span class="font-mono bg-blue-950 px-2 py-0.5 rounded text-white">860987054243453</span> | SPM32 3-Phase Meter</p>
             </div>
             <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
                 <p class="text-xs text-blue-100">Total Record</p>
-                <p class="text-2xl font-bold" id="total-records">51 Data</p>
+                <p class="text-2xl font-bold">51 Data</p>
             </div>
         </div>
 
-        <!-- Ringkasan Metric Card (Data Terbaru) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="cards-container">
+        <!-- Metric Cards (Data Terbaru) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Tegangan Rerata (V)</p>
                 <p class="text-2xl font-bold text-blue-600 mt-1" id="card-voltage">0 V</p>
@@ -37,7 +39,7 @@
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Arus Rerata (A)</p>
                 <p class="text-2xl font-bold text-emerald-600 mt-1" id="card-current">0 A</p>
-                <span class="text-[10px] text-gray-400">Total Bebeban</span>
+                <span class="text-[10px] text-gray-400">Total Beban</span>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Frekuensi (Hz)</p>
@@ -51,15 +53,58 @@
             </div>
         </div>
 
-        <!-- Tabel Data Utama -->
+        <!-- SECTION GRAFIK PARALEL -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Grafik Tegangan -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Grafik Tegangan 3 Phase (Volt)
+                </h3>
+                <div class="h-64">
+                    <canvas id="chartVoltage"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafik Arus -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Grafik Arus 3 Phase (Ampere)
+                </h3>
+                <div class="h-64">
+                    <canvas id="chartCurrent"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafik THD Tegangan -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Grafik THD Tegangan (%)
+                </h3>
+                <div class="h-64">
+                    <canvas id="chartTHD"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafik Frekuensi & Power Factor -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span> Grafik Frekuensi (Hz) & Power Factor
+                </h3>
+                <div class="h-64">
+                    <canvas id="chartFreqPF"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL DATA UTAMA -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
                     <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri Listrik</h2>
-                    <p class="text-xs text-gray-500">Menampilkan Log Pengukuran 3 Phase secara terperinci</p>
+                    <p class="text-xs text-gray-500">Log Pengukuran 3 Phase secara terperinci</p>
                 </div>
                 <div class="text-xs bg-gray-100 px-3 py-1.5 rounded-lg text-gray-600 font-medium">
-                    Filter Tanggal: <span class="text-gray-900 font-bold">2026-09-22</span>
+                    Tanggal: <span class="text-gray-900 font-bold">2026-09-22</span>
                 </div>
             </div>
 
@@ -68,9 +113,9 @@
                     <thead>
                         <tr class="bg-gray-50 text-gray-600 uppercase font-semibold text-[11px] border-b border-gray-200">
                             <th class="py-3 px-4">Waktu Sampel</th>
-                            <th class="py-3 px-4 text-center">Tegangan (V)<br><span class="text-[10px] text-gray-400 font-normal">Phase A / B / C</span></th>
-                            <th class="py-3 px-4 text-center">Arus (A)<br><span class="text-[10px] text-gray-400 font-normal">Phase A / B / C</span></th>
-                            <th class="py-3 px-4 text-center">THD Tegangan (%)<br><span class="text-[10px] text-gray-400 font-normal">Phase A / B / C</span></th>
+                            <th class="py-3 px-4 text-center">Tegangan (V)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
+                            <th class="py-3 px-4 text-center">Arus (A)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
+                            <th class="py-3 px-4 text-center">THD Tegangan (%)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
                             <th class="py-3 px-4 text-center">Daya Aktif (W)</th>
                             <th class="py-3 px-4 text-center">Frekuensi</th>
                             <th class="py-3 px-4 text-center">Power Factor</th>
@@ -78,7 +123,7 @@
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100">
-                        <!-- Data dimasukkan oleh JavaScript -->
+                        <!-- Data dimasukkan oleh JS -->
                     </tbody>
                 </table>
             </div>
@@ -91,176 +136,210 @@
     </div>
 
     <script>
-        // Data Telemetri JSON Lengkap dari API Anda
-        const apiResponse = {
-            "status": "success",
-            "pagination": { "total_records": 51, "device_imei": "860987054243453" },
-            "data": [
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.056 },
-                        "thd_voltage_pct": { "a": 1.4, "b": 1.1, "c": 1.2 },
-                        "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.08,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 232.76, "b": 232.99, "c": 232.84 }
-                    },
-                    "timestamp": "20260922235431"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.06 },
-                        "thd_voltage_pct": { "a": 1.4, "b": 1.2, "c": 1.2 },
-                        "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.07,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 234.08, "b": 233.76, "c": 233.2 }
-                    },
-                    "timestamp": "20260922233850"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.067 },
-                        "thd_voltage_pct": { "a": 1.1, "b": 1.2, "c": 1.3 },
-                        "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.03,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 233.65, "b": 233.28, "c": 232.65 }
-                    },
-                    "timestamp": "20260922232350"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.088 },
-                        "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.2 },
-                        "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.00,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 233.76, "b": 233.43, "c": 233.12 }
-                    },
-                    "timestamp": "20260922230849"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.076 },
-                        "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.3 },
-                        "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                        "frequency_hz": 49.95,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 231.76, "b": 233.17, "c": 233.01 }
-                    },
-                    "timestamp": "20260922225349"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.076 },
-                        "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
-                        "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                        "frequency_hz": 49.96,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 231.32, "b": 231.33, "c": 230.87 }
-                    },
-                    "timestamp": "20260922223849"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.084 },
-                        "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
-                        "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.06,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 230.34, "b": 231.89, "c": 231.77 }
-                    },
-                    "timestamp": "20260922222347"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.083 },
-                        "thd_voltage_pct": { "a": 1.3, "b": 1.4, "c": 1.3 },
-                        "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.03,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 229.8, "b": 231.78, "c": 231.48 }
-                    },
-                    "timestamp": "20260922220847"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.078 },
-                        "thd_voltage_pct": { "a": 1.4, "b": 1.4, "c": 1.3 },
-                        "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.03,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 233.49, "b": 233.36, "c": 232.92 }
-                    },
-                    "timestamp": "20260922215346"
-                },
-                {
-                    "meter_id": "spm32-rs232-63",
-                    "measurement_valid": true,
-                    "measurement": {
-                        "power_factor": { "total": -0.089 },
-                        "thd_voltage_pct": { "a": 1.2, "b": 1.4, "c": 1.3 },
-                        "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                        "frequency_hz": 50.03,
-                        "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                        "voltage_v": { "a": 231.43, "b": 233.5, "c": 233.47 }
-                    },
-                    "timestamp": "20260922213846"
+        // Data Telemetri JSON
+        const rawTelemetryData = [
+            {
+                "timestamp": "20260922235431",
+                "measurement": {
+                    "power_factor": { "total": -0.056 },
+                    "thd_voltage_pct": { "a": 1.4, "b": 1.1, "c": 1.2 },
+                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.08,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 232.76, "b": 232.99, "c": 232.84 }
                 }
-            ]
-        };
+            },
+            {
+                "timestamp": "20260922233850",
+                "measurement": {
+                    "power_factor": { "total": -0.06 },
+                    "thd_voltage_pct": { "a": 1.4, "b": 1.2, "c": 1.2 },
+                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.07,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 234.08, "b": 233.76, "c": 233.2 }
+                }
+            },
+            {
+                "timestamp": "20260922232350",
+                "measurement": {
+                    "power_factor": { "total": -0.067 },
+                    "thd_voltage_pct": { "a": 1.1, "b": 1.2, "c": 1.3 },
+                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.03,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 233.65, "b": 233.28, "c": 232.65 }
+                }
+            },
+            {
+                "timestamp": "20260922230849",
+                "measurement": {
+                    "power_factor": { "total": -0.088 },
+                    "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.2 },
+                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.00,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 233.76, "b": 233.43, "c": 233.12 }
+                }
+            },
+            {
+                "timestamp": "20260922225349",
+                "measurement": {
+                    "power_factor": { "total": -0.076 },
+                    "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.3 },
+                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
+                    "frequency_hz": 49.95,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 231.76, "b": 233.17, "c": 233.01 }
+                }
+            },
+            {
+                "timestamp": "20260922223849",
+                "measurement": {
+                    "power_factor": { "total": -0.076 },
+                    "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
+                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
+                    "frequency_hz": 49.96,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 231.32, "b": 231.33, "c": 230.87 }
+                }
+            },
+            {
+                "timestamp": "20260922222347",
+                "measurement": {
+                    "power_factor": { "total": -0.084 },
+                    "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
+                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.06,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 230.34, "b": 231.89, "c": 231.77 }
+                }
+            },
+            {
+                "timestamp": "20260922220847",
+                "measurement": {
+                    "power_factor": { "total": -0.083 },
+                    "thd_voltage_pct": { "a": 1.3, "b": 1.4, "c": 1.3 },
+                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.03,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 229.8, "b": 231.78, "c": 231.48 }
+                }
+            },
+            {
+                "timestamp": "20260922215346",
+                "measurement": {
+                    "power_factor": { "total": -0.078 },
+                    "thd_voltage_pct": { "a": 1.4, "b": 1.4, "c": 1.3 },
+                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.03,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 233.49, "b": 233.36, "c": 232.92 }
+                }
+            },
+            {
+                "timestamp": "20260922213846",
+                "measurement": {
+                    "power_factor": { "total": -0.089 },
+                    "thd_voltage_pct": { "a": 1.2, "b": 1.4, "c": 1.3 },
+                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
+                    "frequency_hz": 50.03,
+                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
+                    "voltage_v": { "a": 231.43, "b": 233.5, "c": 233.47 }
+                }
+            }
+        ];
 
-        // Format waktu ISO String (YYYYMMDDHHmmss -> YYYY-MM-DD HH:mm:ss)
-        function formatWaktu(ts) {
+        function formatJam(ts) {
+            if (!ts || ts.length < 14) return ts;
+            return `${ts.substring(8,10)}:${ts.substring(10,12)}`;
+        }
+
+        function formatWaktuLengkap(ts) {
             if (!ts || ts.length < 14) return ts;
             return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
-        // Render Tampilan Web
-        function initApp() {
-            const listData = apiResponse.data;
+        function initDashboard() {
+            // Urutkan data secara kronologis (lama ke baru) untuk grafik
+            const chartData = [...rawTelemetryData].reverse();
+            const labels = chartData.map(d => formatJam(d.timestamp));
+
+            // Populate Cards (Data Terbaru)
+            const latest = rawTelemetryData[0].measurement;
+            const avgV = ((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c) / 3).toFixed(1);
+            const avgI = ((latest.current_a.a + latest.current_a.b + latest.current_a.c) / 3).toFixed(2);
+
+            document.getElementById('card-voltage').innerText = `${avgV} V`;
+            document.getElementById('card-current').innerText = `${avgI} A`;
+            document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
+            document.getElementById('card-pf').innerText = latest.power_factor.total;
+
+            // 1. Grafik Tegangan
+            new Chart(document.getElementById('chartVoltage'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Phase A (V)', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'Phase B (V)', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'Phase C (V)', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Grafik Arus
+            new Chart(document.getElementById('chartCurrent'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Phase A (A)', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'Phase B (A)', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'Phase C (A)', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 3. Grafik THD Tegangan
+            new Chart(document.getElementById('chartTHD'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'THD A (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.a), borderColor: '#2563eb', tension: 0.3 },
+                        { label: 'THD B (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.b), borderColor: '#10b981', tension: 0.3 },
+                        { label: 'THD C (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.c), borderColor: '#f43f5e', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. Grafik Frekuensi & PF
+            new Chart(document.getElementById('chartFreqPF'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement.frequency_hz), borderColor: '#d97706', tension: 0.3 },
+                        { label: 'Power Factor', data: chartData.map(d => d.measurement.power_factor.total), borderColor: '#9333ea', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Populate Tabel Data
             const tbody = document.getElementById('telemetry-table-body');
             tbody.innerHTML = '';
-
-            // Update Card Terbaru (Ambil indeks pertama)
-            if (listData.length > 0) {
-                const latest = listData[0].measurement;
-                const avgV = ((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c) / 3).toFixed(1);
-                const avgI = ((latest.current_a.a + latest.current_a.b + latest.current_a.c) / 3).toFixed(2);
-
-                document.getElementById('card-voltage').innerText = `${avgV} V`;
-                document.getElementById('card-current').innerText = `${avgI} A`;
-                document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
-                document.getElementById('card-pf').innerText = latest.power_factor.total;
-            }
-
-            // Populate Tabel
-            listData.forEach(item => {
+            rawTelemetryData.forEach(item => {
                 const m = item.measurement;
                 const row = document.createElement('tr');
                 row.className = "hover:bg-blue-50/50 transition-colors duration-150";
 
                 row.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-gray-700 whitespace-nowrap">${formatWaktu(item.timestamp)}</td>
+                    <td class="py-3 px-4 font-mono text-gray-700 whitespace-nowrap">${formatWaktuLengkap(item.timestamp)}</td>
                     <td class="py-3 px-4 text-center">
                         <span class="text-blue-600 font-semibold">${m.voltage_v.a}</span> / 
                         <span class="text-emerald-600 font-semibold">${m.voltage_v.b}</span> / 
@@ -285,8 +364,7 @@
             });
         }
 
-        // Jalankan saat halaman dibuka
-        document.addEventListener("DOMContentLoaded", initApp);
+        document.addEventListener("DOMContentLoaded", initDashboard);
     </script>
 </body>
 </html>
