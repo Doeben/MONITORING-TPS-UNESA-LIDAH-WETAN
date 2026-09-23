@@ -1,29 +1,37 @@
-name: Auto Scrape Monacolisa Data
+name: Auto Fetch Monacolisa Telemetry Data
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # Berjalan otomatis setiap 15 menit
-  workflow_dispatch: # Supaya bisa di-klik manual dari tombol GitHub
+    # Jalankan otomatis setiap 15 menit
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Mengaktifkan tombol "Run workflow" manual di GitHub Actions
 
 jobs:
-  scrape:
+  fetch-and-commit:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Checkout repository
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # 2. Setup Environment Python
       - name: Set up Python
-        uses: actions/python-v8@v4
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
+      # 3. Jalankan Script Python dengan Secret URL Rahasia
       - name: Run Fetch Script
+        env:
+          MONACOLISA_API_URL: ${{ secrets.MONACOLISA_API_URL }}
         run: python fetch_data.py
 
-      - name: Commit & Push Data
+      # 4. Commit dan Push file data.json yang baru diperbarui
+      - name: Commit and Push Updated Data
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data.json
-          git commit -m "Auto update data telemetri Monacolisa" || exit 0
+          git commit -m "Auto-update telemetry data.json" || exit 0
           git push
