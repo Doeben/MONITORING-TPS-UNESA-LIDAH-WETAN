@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MONITORING TPS UNESA LIDAH WETAN</title>
-    <!-- Tailwind CSS untuk Desain -->
+    <!-- Tailwind CSS & Chart.js -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js untuk Grafik Interaktif -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-3 md:p-6">
@@ -29,97 +28,51 @@
             </div>
         </div>
 
-        <!-- BARIS FILTER TANGGAL -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span class="text-sm font-bold text-gray-700">Filter Tanggal Telemetri:</span>
-            </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-                <input type="date" id="date-picker" value="2026-09-22" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-medium w-full sm:w-auto">
-                <button id="btn-filter" class="bg-blue-800 hover:bg-blue-900 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap">
-                    Tampilkan Data
-                </button>
-            </div>
-        </div>
-
-        <!-- Metric Cards (Data Terbaru) -->
+        <!-- Metric Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Tegangan Rerata (V)</p>
                 <p class="text-2xl font-bold text-blue-600 mt-1" id="card-voltage">0 V</p>
-                <span class="text-[10px] text-gray-400">Phase A, B, C</span>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Arus Rerata (A)</p>
                 <p class="text-2xl font-bold text-emerald-600 mt-1" id="card-current">0 A</p>
-                <span class="text-[10px] text-gray-400">Total Beban</span>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Frekuensi (Hz)</p>
                 <p class="text-2xl font-bold text-amber-600 mt-1" id="card-freq">0 Hz</p>
-                <span class="text-[10px] text-gray-400">Grid Frequency</span>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <p class="text-xs font-medium text-gray-500 uppercase">Power Factor (PF)</p>
                 <p class="text-2xl font-bold text-purple-600 mt-1" id="card-pf">0</p>
-                <span class="text-[10px] text-gray-400">Total PF</span>
             </div>
         </div>
 
         <!-- SECTION GRAFIK PARALEL -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Grafik Tegangan -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Grafik Tegangan 3 Phase (Volt)
-                </h3>
-                <div class="h-64">
-                    <canvas id="chartVoltage"></canvas>
-                </div>
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Grafik Tegangan 3 Phase (Volt)</h3>
+                <div class="h-64"><canvas id="chartVoltage"></canvas></div>
             </div>
-
-            <!-- Grafik Arus -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Grafik Arus 3 Phase (Ampere)
-                </h3>
-                <div class="h-64">
-                    <canvas id="chartCurrent"></canvas>
-                </div>
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Grafik Arus 3 Phase (Ampere)</h3>
+                <div class="h-64"><canvas id="chartCurrent"></canvas></div>
             </div>
-
-            <!-- Grafik THD Tegangan -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Grafik THD Tegangan (%)
-                </h3>
-                <div class="h-64">
-                    <canvas id="chartTHD"></canvas>
-                </div>
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Grafik THD Tegangan (%)</h3>
+                <div class="h-64"><canvas id="chartTHD"></canvas></div>
             </div>
-
-            <!-- Grafik Frekuensi & Power Factor -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span> Grafik Frekuensi (Hz) & Power Factor
-                </h3>
-                <div class="h-64">
-                    <canvas id="chartFreqPF"></canvas>
-                </div>
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Grafik Frekuensi & Power Factor</h3>
+                <div class="h-64"><canvas id="chartFreqPF"></canvas></div>
             </div>
         </div>
 
         <!-- TABEL DATA UTAMA -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri Listrik</h2>
-                    <p class="text-xs text-gray-500">Log Pengukuran 3 Phase secara terperinci</p>
-                </div>
-                <div class="text-xs bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg font-semibold border border-blue-200">
-                    Tanggal Terpilih: <span id="label-selected-date" class="font-bold">2026-09-22</span>
-                </div>
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri Real-Time</h2>
+                <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">Encrypted Connection</span>
             </div>
 
             <div class="overflow-x-auto">
@@ -127,144 +80,24 @@
                     <thead>
                         <tr class="bg-gray-50 text-gray-600 uppercase font-semibold text-[11px] border-b border-gray-200">
                             <th class="py-3 px-4">Waktu Sampel</th>
-                            <th class="py-3 px-4 text-center">Tegangan (V)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
-                            <th class="py-3 px-4 text-center">Arus (A)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
-                            <th class="py-3 px-4 text-center">THD Tegangan (%)<br><span class="text-[10px] text-gray-400 font-normal">A / B / C</span></th>
+                            <th class="py-3 px-4 text-center">Tegangan (V)</th>
+                            <th class="py-3 px-4 text-center">Arus (A)</th>
+                            <th class="py-3 px-4 text-center">THD Tegangan (%)</th>
                             <th class="py-3 px-4 text-center">Daya Aktif (W)</th>
                             <th class="py-3 px-4 text-center">Frekuensi</th>
                             <th class="py-3 px-4 text-center">Power Factor</th>
-                            <th class="py-3 px-4 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100">
-                        <!-- Data dimasukkan oleh JS -->
+                        <tr><td colspan="7" class="py-6 text-center text-gray-400">Memuat data dari server...</td></tr>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="p-4 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-500">
-                MONITORING TPS UNESA LIDAH WETAN &copy; 2026 — Telemetry Dashboard System
             </div>
         </div>
 
     </div>
 
     <script>
-        // Database Telemetri JSON
-        const rawTelemetryData = [
-            {
-                "timestamp": "20260922235431",
-                "measurement": {
-                    "power_factor": { "total": -0.056 },
-                    "thd_voltage_pct": { "a": 1.4, "b": 1.1, "c": 1.2 },
-                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.08,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 232.76, "b": 232.99, "c": 232.84 }
-                }
-            },
-            {
-                "timestamp": "20260922233850",
-                "measurement": {
-                    "power_factor": { "total": -0.06 },
-                    "thd_voltage_pct": { "a": 1.4, "b": 1.2, "c": 1.2 },
-                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.07,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 234.08, "b": 233.76, "c": 233.2 }
-                }
-            },
-            {
-                "timestamp": "20260922232350",
-                "measurement": {
-                    "power_factor": { "total": -0.067 },
-                    "thd_voltage_pct": { "a": 1.1, "b": 1.2, "c": 1.3 },
-                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.03,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 233.65, "b": 233.28, "c": 232.65 }
-                }
-            },
-            {
-                "timestamp": "20260922230849",
-                "measurement": {
-                    "power_factor": { "total": -0.088 },
-                    "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.2 },
-                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.00,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 233.76, "b": 233.43, "c": 233.12 }
-                }
-            },
-            {
-                "timestamp": "20260922225349",
-                "measurement": {
-                    "power_factor": { "total": -0.076 },
-                    "thd_voltage_pct": { "a": 1.2, "b": 1.2, "c": 1.3 },
-                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                    "frequency_hz": 49.95,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 231.76, "b": 233.17, "c": 233.01 }
-                }
-            },
-            {
-                "timestamp": "20260922223849",
-                "measurement": {
-                    "power_factor": { "total": -0.076 },
-                    "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
-                    "current_a": { "a": 0.15, "b": 0.18, "c": 0 },
-                    "frequency_hz": 49.96,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 231.32, "b": 231.33, "c": 230.87 }
-                }
-            },
-            {
-                "timestamp": "20260922222347",
-                "measurement": {
-                    "power_factor": { "total": -0.084 },
-                    "thd_voltage_pct": { "a": 1.2, "b": 1.3, "c": 1.3 },
-                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.06,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 230.34, "b": 231.89, "c": 231.77 }
-                }
-            },
-            {
-                "timestamp": "20260922220847",
-                "measurement": {
-                    "power_factor": { "total": -0.083 },
-                    "thd_voltage_pct": { "a": 1.3, "b": 1.4, "c": 1.3 },
-                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.03,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 229.8, "b": 231.78, "c": 231.48 }
-                }
-            },
-            {
-                "timestamp": "20260922215346",
-                "measurement": {
-                    "power_factor": { "total": -0.078 },
-                    "thd_voltage_pct": { "a": 1.4, "b": 1.4, "c": 1.3 },
-                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.03,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 233.49, "b": 233.36, "c": 232.92 }
-                }
-            },
-            {
-                "timestamp": "20260922213846",
-                "measurement": {
-                    "power_factor": { "total": -0.089 },
-                    "thd_voltage_pct": { "a": 1.2, "b": 1.4, "c": 1.3 },
-                    "current_a": { "a": 0, "b": 0.18, "c": 0 },
-                    "frequency_hz": 50.03,
-                    "active_power_w": { "a": 0, "b": -6, "c": 0, "total": 0 },
-                    "voltage_v": { "a": 231.43, "b": 233.5, "c": 233.47 }
-                }
-            }
-        ];
-
-        // Global Chart instances untuk dipembaruan (destroy & recreate)
         let chartV, chartI, chartTHD, chartFPF;
 
         function formatJam(ts) {
@@ -272,158 +105,125 @@
             return `${ts.substring(8,10)}:${ts.substring(10,12)}`;
         }
 
-        function formatWaktuLengkap(ts) {
+        function formatWaktu(ts) {
             if (!ts || ts.length < 14) return ts;
             return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
-        function filterAndRenderData() {
-            const selectedDateInput = document.getElementById('date-picker').value; // Contoh: "2026-09-22"
-            const formattedFilterDate = selectedDateInput.replace(/-/g, ''); // Jadi: "20260922"
+        // MENGAMBIL DATA DARI DATA.JSON LOKAL (BUKAN DARI URL MONACOLISA LANGSUNG)
+        async function loadTelemetryData() {
+            try {
+                const response = await fetch('./data.json');
+                if (!response.ok) throw new Error("File data.json belum tersedia");
+                
+                const result = await response.json();
+                const telemetryList = result.data || [];
 
-            document.getElementById('label-selected-date').innerText = selectedDateInput;
+                document.getElementById('total-records').innerText = `${telemetryList.length} Data`;
 
-            // Filter data berdasarkan prefix tanggal YYYYMMDD
-            const filteredData = rawTelemetryData.filter(d => d.timestamp.startsWith(formattedFilterDate));
+                if (telemetryList.length === 0) {
+                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500 font-bold">Data kosong atau belum ter-sync.</td></tr>`;
+                    return;
+                }
 
-            document.getElementById('total-records').innerText = `${filteredData.length} Data`;
+                // Render Cards & Tabel
+                const latest = telemetryList[0].measurement;
+                document.getElementById('card-voltage').innerText = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} V`;
+                document.getElementById('card-current').innerText = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} A`;
+                document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
+                document.getElementById('card-pf').innerText = latest.power_factor.total;
 
-            // Jika data kosong pada tanggal tersebut
-            if (filteredData.length === 0) {
-                document.getElementById('card-voltage').innerText = "0 V";
-                document.getElementById('card-current').innerText = "0 A";
-                document.getElementById('card-freq').innerText = "0 Hz";
-                document.getElementById('card-pf').innerText = "0";
+                const tbody = document.getElementById('telemetry-table-body');
+                tbody.innerHTML = '';
+                telemetryList.forEach(item => {
+                    const m = item.measurement;
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-blue-50/50";
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-gray-700">${formatWaktu(item.timestamp)}</td>
+                        <td class="py-3 px-4 text-center font-semibold"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
+                        <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
+                        <td class="py-3 px-4 text-center text-gray-500">${m.thd_voltage_pct.a}% / ${m.thd_voltage_pct.b}% / ${m.thd_voltage_pct.c}%</td>
+                        <td class="py-3 px-4 text-center font-bold">${m.active_power_w.total} W</td>
+                        <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
+                        <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
 
-                document.getElementById('telemetry-table-body').innerHTML = `
-                    <tr>
-                        <td colspan="8" class="py-8 text-center text-gray-500 font-semibold">
-                            ⚠️ Tidak ada data telemetri ditemukan untuk tanggal <span class="text-blue-600">${selectedDateInput}</span>.
-                        </td>
-                    </tr>
-                `;
-                renderCharts([]);
-                return;
+                renderCharts(telemetryList);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500">Gagal memuat file data.json. Menunggu sinkronisasi otomatis GitHub...</td></tr>`;
             }
-
-            // Populate Cards (Data Terbaru)
-            const latest = filteredData[0].measurement;
-            const avgV = ((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c) / 3).toFixed(1);
-            const avgI = ((latest.current_a.a + latest.current_a.b + latest.current_a.c) / 3).toFixed(2);
-
-            document.getElementById('card-voltage').innerText = `${avgV} V`;
-            document.getElementById('card-current').innerText = `${avgI} A`;
-            document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
-            document.getElementById('card-pf').innerText = latest.power_factor.total;
-
-            // Populate Tabel Data
-            const tbody = document.getElementById('telemetry-table-body');
-            tbody.innerHTML = '';
-            filteredData.forEach(item => {
-                const m = item.measurement;
-                const row = document.createElement('tr');
-                row.className = "hover:bg-blue-50/50 transition-colors duration-150";
-
-                row.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-gray-700 whitespace-nowrap">${formatWaktuLengkap(item.timestamp)}</td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="text-blue-600 font-semibold">${m.voltage_v.a}</span> / 
-                        <span class="text-emerald-600 font-semibold">${m.voltage_v.b}</span> / 
-                        <span class="text-rose-600 font-semibold">${m.voltage_v.c}</span>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="text-blue-600">${m.current_a.a}</span> / 
-                        <span class="text-emerald-600">${m.current_a.b}</span> / 
-                        <span class="text-rose-600">${m.current_a.c}</span>
-                    </td>
-                    <td class="py-3 px-4 text-center text-gray-500">
-                        ${m.thd_voltage_pct.a}% / ${m.thd_voltage_pct.b}% / ${m.thd_voltage_pct.c}%
-                    </td>
-                    <td class="py-3 px-4 text-center font-bold text-gray-800">${m.active_power_w.total} W</td>
-                    <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
-                    <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Valid</span>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            // Render Grafik
-            renderCharts(filteredData);
         }
 
-        function renderCharts(dataArray) {
-            // Hapus chart lama jika ada
-            if (chartV) chartV.destroy();
-            if (chartI) chartI.destroy();
-            if (chartTHD) chartTHD.destroy();
-            if (chartFPF) chartFPF.destroy();
-
-            const chartData = [...dataArray].reverse(); // Urutkan dari jam terkecil ke terbesar
+        function renderCharts(dataList) {
+            const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatJam(d.timestamp));
 
-            // 1. Grafik Tegangan
             chartV = new Chart(document.getElementById('chartVoltage'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Phase A (V)', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'Phase B (V)', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'Phase C (V)', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', tension: 0.3 }
+                        { label: 'Phase A', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb' },
+                        { label: 'Phase B', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981' },
+                        { label: 'Phase C', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // 2. Grafik Arus
             chartI = new Chart(document.getElementById('chartCurrent'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Phase A (A)', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'Phase B (A)', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'Phase C (A)', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', tension: 0.3 }
+                        { label: 'Phase A', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb' },
+                        { label: 'Phase B', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981' },
+                        { label: 'Phase C', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // 3. Grafik THD
             chartTHD = new Chart(document.getElementById('chartTHD'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'THD A (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.a), borderColor: '#2563eb', tension: 0.3 },
-                        { label: 'THD B (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.b), borderColor: '#10b981', tension: 0.3 },
-                        { label: 'THD C (%)', data: chartData.map(d => d.measurement.thd_voltage_pct.c), borderColor: '#f43f5e', tension: 0.3 }
+                        { label: 'THD A', data: chartData.map(d => d.measurement.thd_voltage_pct.a), borderColor: '#2563eb' },
+                        { label: 'THD B', data: chartData.map(d => d.measurement.thd_voltage_pct.b), borderColor: '#10b981' },
+                        { label: 'THD C', data: chartData.map(d => d.measurement.thd_voltage_pct.c), borderColor: '#f43f5e' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // 4. Grafik Frekuensi & PF
             chartFPF = new Chart(document.getElementById('chartFreqPF'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement.frequency_hz), borderColor: '#d97706', tension: 0.3 },
-                        { label: 'Power Factor', data: chartData.map(d => d.measurement.power_factor.total), borderColor: '#9333ea', tension: 0.3 }
+                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement.frequency_hz), borderColor: '#d97706' },
+                        { label: 'Power Factor', data: chartData.map(d => d.measurement.power_factor.total), borderColor: '#9333ea' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // Event Listener untuk Tombol Filter Tanggal
-        document.getElementById('btn-filter').addEventListener('click', filterAndRenderData);
+        // Anti Inspect Element / Klik Kanan
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
+                return false;
+            }
+        };
 
-        // Inisialisasi awal saat halaman dibuka
-        document.addEventListener("DOMContentLoaded", filterAndRenderData);
+        document.addEventListener("DOMContentLoaded", loadTelemetryData);
     </script>
 </body>
 </html>
