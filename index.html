@@ -13,7 +13,7 @@
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Header Banner -->
-        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white rounded-2xl p-6 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <span class="inline-block w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -22,9 +22,19 @@
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">MONITORING TPS UNESA LIDAH WETAN</h1>
                 <p class="text-sm text-blue-200 mt-1">Perangkat: <span class="font-mono bg-blue-950 px-2 py-0.5 rounded text-white">860987054243453</span> | SPM32 3-Phase Meter</p>
             </div>
-            <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
-                <p class="text-xs text-blue-100">Total Record Ditampilkan</p>
-                <p class="text-2xl font-bold" id="total-records">0 Data</p>
+
+            <!-- Kontrol Pilih Tanggal & Stat -->
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                <!-- FITUR GANTI TANGGAL -->
+                <div class="bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/20 flex flex-col gap-1">
+                    <label for="date-filter" class="text-[10px] font-semibold uppercase text-blue-200">Pilih Tanggal Data:</label>
+                    <input type="date" id="date-filter" class="bg-blue-950 text-white border border-blue-400/40 text-xs rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-right">
+                    <p class="text-xs text-blue-100">Total Record Tampil</p>
+                    <p class="text-2xl font-bold" id="total-records">0 Data</p>
+                </div>
             </div>
         </div>
 
@@ -71,7 +81,7 @@
         <!-- TABEL DATA UTAMA -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri Real-Time</h2>
+                <h2 class="text-lg font-bold text-gray-800">Riwayat Telemetri</h2>
                 <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">Encrypted Connection</span>
             </div>
 
@@ -89,7 +99,7 @@
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100">
-                        <tr><td colspan="7" class="py-6 text-center text-gray-400">Memuat data dari server...</td></tr>
+                        <tr><td colspan="7" class="py-6 text-center text-gray-400">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -98,6 +108,7 @@
     </div>
 
     <script>
+        let allTelemetryData = [];
         let chartV, chartI, chartTHD, chartFPF;
 
         function formatJam(ts) {
@@ -110,56 +121,104 @@
             return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
-        // MENGAMBIL DATA DARI DATA.JSON LOKAL (BUKAN DARI URL MONACOLISA LANGSUNG)
-        async function loadTelemetryData() {
+        async function initData() {
             try {
                 const response = await fetch('./data.json');
                 if (!response.ok) throw new Error("File data.json belum tersedia");
                 
                 const result = await response.json();
-                const telemetryList = result.data || [];
+                allTelemetryData = result.data || [];
 
-                document.getElementById('total-records').innerText = `${telemetryList.length} Data`;
-
-                if (telemetryList.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500 font-bold">Data kosong atau belum ter-sync.</td></tr>`;
+                if (allTelemetryData.length === 0) {
+                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500 font-bold">Data kosong.</td></tr>`;
                     return;
                 }
 
-                // Render Cards & Tabel
-                const latest = telemetryList[0].measurement;
-                document.getElementById('card-voltage').innerText = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} V`;
-                document.getElementById('card-current').innerText = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} A`;
-                document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
-                document.getElementById('card-pf').innerText = latest.power_factor.total;
+                // Set default tanggal input ke tanggal terbaru yang ada di data
+                const newestTimestamp = allTelemetryData[0].timestamp; // YYYYMMDDHHMMSS
+                const newestDateStr = `${newestTimestamp.substring(0,4)}-${newestTimestamp.substring(4,6)}-${newestTimestamp.substring(6,8)}`;
+                
+                const datePicker = document.getElementById('date-filter');
+                datePicker.value = newestDateStr;
 
-                const tbody = document.getElementById('telemetry-table-body');
-                tbody.innerHTML = '';
-                telemetryList.forEach(item => {
-                    const m = item.measurement;
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-blue-50/50";
-                    row.innerHTML = `
-                        <td class="py-3 px-4 font-mono text-gray-700">${formatWaktu(item.timestamp)}</td>
-                        <td class="py-3 px-4 text-center font-semibold"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
-                        <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
-                        <td class="py-3 px-4 text-center text-gray-500">${m.thd_voltage_pct.a}% / ${m.thd_voltage_pct.b}% / ${m.thd_voltage_pct.c}%</td>
-                        <td class="py-3 px-4 text-center font-bold">${m.active_power_w.total} W</td>
-                        <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
-                        <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
-                    `;
-                    tbody.appendChild(row);
+                // Render data sesuai tanggal awal
+                filterAndRenderData(newestDateStr);
+
+                // Event listener saat tanggal diubah oleh user
+                datePicker.addEventListener('change', (e) => {
+                    filterAndRenderData(e.target.value);
                 });
-
-                renderCharts(telemetryList);
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500">Gagal memuat file data.json. Menunggu sinkronisasi otomatis GitHub...</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500">Gagal memuat file data.json.</td></tr>`;
             }
         }
 
+        function filterAndRenderData(selectedDateStr) {
+            if (!selectedDateStr) return;
+
+            // Mengubah format YYYY-MM-DD menjadi YYYYMMDD
+            const compactSelectedDate = selectedDateStr.replace(/-/g, '');
+
+            // Filter data yang timestamp-nya diawali dengan tanggal terpilih
+            const filteredData = allTelemetryData.filter(item => item.timestamp.startsWith(compactSelectedDate));
+
+            document.getElementById('total-records').innerText = `${filteredData.length} Data`;
+
+            const tbody = document.getElementById('telemetry-table-body');
+            tbody.innerHTML = '';
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-amber-600 font-medium">Tidak ada rekaman data telemetri untuk tanggal ${selectedDateStr}.</td></tr>`;
+                resetCards();
+                renderCharts([]);
+                return;
+            }
+
+            // Update Cards dari data paling terbaru di hari tersebut
+            const latest = filteredData[0].measurement;
+            document.getElementById('card-voltage').innerText = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} V`;
+            document.getElementById('card-current').innerText = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} A`;
+            document.getElementById('card-freq').innerText = `${latest.frequency_hz} Hz`;
+            document.getElementById('card-pf').innerText = latest.power_factor.total;
+
+            // Render Tabel
+            filteredData.forEach(item => {
+                const m = item.measurement;
+                const row = document.createElement('tr');
+                row.className = "hover:bg-blue-50/50";
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-gray-700">${formatWaktu(item.timestamp)}</td>
+                    <td class="py-3 px-4 text-center font-semibold"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
+                    <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
+                    <td class="py-3 px-4 text-center text-gray-500">${m.thd_voltage_pct.a}% / ${m.thd_voltage_pct.b}% / ${m.thd_voltage_pct.c}%</td>
+                    <td class="py-3 px-4 text-center font-bold">${m.active_power_w.total} W</td>
+                    <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
+                    <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderCharts(filteredData);
+        }
+
+        function resetCards() {
+            document.getElementById('card-voltage').innerText = `0 V`;
+            document.getElementById('card-current').innerText = `0 A`;
+            document.getElementById('card-freq').innerText = `0 Hz`;
+            document.getElementById('card-pf').innerText = `0`;
+        }
+
         function renderCharts(dataList) {
+            // Hancurkan chart lama jika ada agar tidak tumpang tindih
+            if (chartV) chartV.destroy();
+            if (chartI) chartI.destroy();
+            if (chartTHD) chartTHD.destroy();
+            if (chartFPF) chartFPF.destroy();
+
+            if (dataList.length === 0) return;
+
             const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatJam(d.timestamp));
 
@@ -223,7 +282,7 @@
             }
         };
 
-        document.addEventListener("DOMContentLoaded", loadTelemetryData);
+        document.addEventListener("DOMContentLoaded", initData);
     </script>
 </body>
 </html>
