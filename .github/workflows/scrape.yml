@@ -3,7 +3,7 @@ name: Auto Fetch Monacolisa Telemetry Data
 on:
   schedule:
     # Jalankan otomatis setiap 15 menit
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch: # Mengaktifkan tombol "Run workflow" manual di GitHub Actions
 
 jobs:
