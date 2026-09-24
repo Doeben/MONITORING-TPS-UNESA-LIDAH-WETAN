@@ -155,13 +155,13 @@
                             <th class="py-3 px-4">Waktu Sampel</th>
                             <th class="py-3 px-4 text-center">Tegangan (V) [A/B/C]</th>
                             <th class="py-3 px-4 text-center">Arus (A) [A/B/C]</th>
-                            <th class="py-3 px-4 text-center">Daya Aktif (W)</th>
+                            <!-- Kolom Daya Aktif (W) Dihapus -->
                             <th class="py-3 px-4 text-center">Frekuensi</th>
                             <th class="py-3 px-4 text-center">Power Factor</th>
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-slate-100">
-                        <tr><td colspan="6" class="py-6 text-center text-slate-400">Memuat data telemetri...</td></tr>
+                        <tr><td colspan="5" class="py-6 text-center text-slate-400">Memuat data telemetri...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -193,7 +193,7 @@
                 allTelemetryData = result.data || [];
 
                 if (allTelemetryData.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-500 font-bold">Data tidak ditemukan.</td></tr>`;
+                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-bold">Data tidak ditemukan.</td></tr>`;
                     return;
                 }
 
@@ -216,7 +216,7 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-500">Gagal mengambil data telemetri.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500">Gagal mengambil data telemetri.</td></tr>`;
             }
         }
 
@@ -239,7 +239,7 @@
             tbody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-amber-600 font-medium">Tidak ada data untuk rentang tanggal ${startVal} s/d ${endVal}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-amber-600 font-medium">Tidak ada data untuk rentang tanggal ${startVal} s/d ${endVal}.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 return;
@@ -273,7 +273,6 @@
                     <td class="py-3 px-4 font-mono text-slate-700">${formatWaktuTabel(item.timestamp)}</td>
                     <td class="py-3 px-4 text-center font-medium"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
                     <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
-                    <td class="py-3 px-4 text-center font-bold text-slate-500">${m.active_power_w.total} W</td>
                     <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
                     <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
                 `;
@@ -295,7 +294,7 @@
             if (chartV) chartV.destroy();
             if (chartI) chartI.destroy();
             if (chartP) chartP.destroy();
-            if (chartTHD) chartTHD.destroy(); // Dihancurkan sebelum dirender ulang
+            if (chartTHD) chartTHD.destroy();
 
             if (dataList.length === 0) return;
 
