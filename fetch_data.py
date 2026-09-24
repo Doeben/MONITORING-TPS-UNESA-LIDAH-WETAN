@@ -3,7 +3,7 @@ import json
 import urllib.request
 import ssl
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 API_URL = os.environ.get('MONACOLISA_API_URL')
 
@@ -11,12 +11,12 @@ if not API_URL:
     print("❌ ERROR: Secret MONACOLISA_API_URL tidak ditemukan!")
     exit(1)
 
-# Paksa parameter limit=200 agar menarik data 1 hari penuh (bukan cuma 10 data)
+# 1. Buka limit ke 1000 agar data dalam 1 hari tidak terpotong di pertengahan
 clean_url = API_URL
 if "limit=" in clean_url:
-    clean_url = re.sub(r'limit=\d+', 'limit=200', clean_url)
+    clean_url = re.sub(r'limit=\d+', 'limit=1000', clean_url)
 else:
-    clean_url += "&limit=200"
+    clean_url += "&limit=1000"
 
 clean_url = re.sub(r'&tanggal=[\d-]+', '', clean_url)
 clean_url = re.sub(r'\?tanggal=[\d-]+&?', '?', clean_url)
@@ -27,7 +27,7 @@ ctx.verify_mode = ssl.CERT_NONE
 
 combined_map = {}
 
-# Mencegah riwayat lama hilang (akumulasi data)
+# Mencegah riwayat lama hilang (akumulasi dari data.json yang sudah ada)
 if os.path.exists('data.json'):
     try:
         with open('data.json', 'r', encoding='utf-8') as f:
@@ -37,12 +37,16 @@ if os.path.exists('data.json'):
     except Exception:
         pass
 
-today = datetime.now()
-print("🔄 Mengambil data telemetri Monacolisa 14 hari terakhir...")
+# 2. Paksa zona waktu ke WIB (UTC+7)
+wib_tz = timezone(timedelta(hours=7))
+today_wib = datetime.now(wib_tz)
 
-# Tarik data 14 hari ke belakang
-for i in range(14):
-    date_str = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+print("🔄 Mengambil data telemetri Monacolisa...")
+
+# 3. Cukup tarik 2 hari terakhir (Hari Ini & Kemarin) agar eksekusi cepat (< 3 detik)
+# Riwayat hari-hari sebelumnya tetap aman tersimpan di combined_map
+for i in range(2):
+    date_str = (today_wib - timedelta(days=i)).strftime('%Y-%m-%d')
     separator = '&' if '?' in clean_url else '?'
     target_url = f"{clean_url}{separator}tanggal={date_str}"
     
