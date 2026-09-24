@@ -53,7 +53,7 @@
     <!-- KONTEN UTAMA -->
     <main class="max-w-7xl mx-auto w-full px-4 md:px-8 -mt-8 space-y-6 pb-12">
         
-        <!-- TOOLBAR FILTER RENTANG TANGGAL -->
+        <!-- TOOLBAR FILTER RENTANG TANGGAL & LOKASI -->
         <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3 w-full md:w-auto">
                 <div class="bg-teal-100 p-2 rounded-lg text-teal-800">
@@ -66,8 +66,18 @@
                     <button onclick="fetchEnergyData()" class="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-1">Terapkan Filter</button>
                 </div>
             </div>
-            <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
-                Total Data Terambil: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
+
+            <!-- TOMBOL LOKASI MAPS & TOTAL DATA -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                <a href="https://goo.gl/maps/P5emmL1PKBb3Kk2w5" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    <span>Lokasi Depo Sampah</span>
+                </a>
+                <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+                    Total Data Terambil: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
+                </div>
             </div>
         </div>
 
@@ -257,7 +267,6 @@
             let combinedData = [];
 
             try {
-                // Eksekusi request API secara simultan/paralel untuk setiap tanggal
                 const fetchPromises = datesToFetch.map(dateStr => {
                     const url = `${API_CONFIG.baseUrl}?device_imei=${API_CONFIG.deviceImei}&tanggal=${dateStr}&limit=${limitVal}&sort=DESC`;
                     return fetch(url, {
@@ -277,7 +286,6 @@
                     }
                 });
 
-                // Urutkan data gabungan secara descending berdasarkan timestamp (data terbaru di atas)
                 combinedData.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
                 telemetryData = combinedData;
@@ -306,7 +314,6 @@
                 return;
             }
 
-            // Metrik Kartu (Data Paling Terkini)
             const latest = telemetryData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
@@ -447,7 +454,6 @@
             if (chartTHDI) chartTHDI.destroy();
             if (chartFreq) chartFreq.destroy();
 
-            // Ambil maksimal 50 data poin untuk ditampilkan di chart agar tidak crowded
             const chartData = [...dataList].slice(0, 50).reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
@@ -539,20 +545,13 @@
             });
         }
 
-        // INISIALISASI HALAMAN
-        window.onload = () => {
-            const now = new Date();
-            const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            
+        // AUTO INITIALIZE ON LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
             document.getElementById('start-date').value = today;
             document.getElementById('end-date').value = today;
-            document.getElementById('display-device-id').innerText = API_CONFIG.deviceImei;
-
             fetchEnergyData();
-
-            // Auto refresh setiap 30 detik
-            setInterval(fetchEnergyData, 30000);
-        };
+        });
     </script>
 </body>
 </html>
