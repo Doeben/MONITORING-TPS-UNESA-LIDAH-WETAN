@@ -1,10 +1,22 @@
 name: Auto Fetch Monacolisa Telemetry Data
 
 on:
+  # 1. Jalan otomatis setiap kali kamu edit / push file ke branch main (termasuk jika kamu ganti index/script)
+  push:
+    branches:
+      - main
+
+  # 2. Jalan otomatis berdasarkan jadwal waktu (cron)
   schedule:
     # Jalankan otomatis setiap 15 menit
     - cron: '*/5 * * * *'
-  workflow_dispatch: # Mengaktifkan tombol "Run workflow" manual di GitHub Actions
+
+  # 3. Tombol manual "Run workflow" di tab Actions tetap tersedia
+  workflow_dispatch:
+
+# PENTING: Memberikan izin akses agar GitHub Actions bisa melakukan 'git push' pembaruan data.json
+permissions:
+  contents: write
 
 jobs:
   fetch-and-commit:
@@ -33,5 +45,5 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data.json
-          git commit -m "Auto-update telemetry data.json" || exit 0
+          git commit -m "Auto-update telemetry data.json [skip ci]" || exit 0
           git push
