@@ -3,171 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNESA Smart-E | Depo Sampah Lidah Wetan</title>
+    <title>Sistem Monitoring Energi | TPS Lidah Wetan</title>
     <!-- Tailwind CSS & Chart.js -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Poppins untuk tampilan yang lebih modern/beda -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Poppins', sans-serif; }
+        /* Kustomisasi scrollbar tabel agar lebih rapi */
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 p-3 md:p-6">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
-    <div class="max-w-7xl mx-auto space-y-6">
-        
-        <!-- HEADER WITH LOGOS -->
-        <header class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <!-- Logo & Title Area -->
-            <div class="flex items-center gap-4 md:gap-5 w-full md:w-auto">
-                <!-- LOGO UNESA -->
-                <img src="logo-unesa.png" alt="Logo UNESA" class="h-20 md:h-24 w-auto object-contain shrink-0">
-                
-                <!-- Garis Pembatas Vertikal -->
-                <div class="h-14 md:h-16 w-[1px] bg-slate-200 hidden sm:block"></div>
-                
+    <!-- FULL WIDTH HEADER DENGAN TEMA TEAL/EMERALD -->
+    <header class="bg-teal-900 text-white shadow-lg pt-6 pb-16 px-4 md:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <div class="flex items-center gap-5">
+                <div class="bg-white p-2 rounded-xl shadow-md">
+                    <img src="logo-unesa.png" alt="Logo" class="h-16 w-auto object-contain">
+                </div>
                 <div>
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span class="text-[11px] font-bold text-blue-900 tracking-wider uppercase">UNESA SMART-E SYSTEM</span>
-                        <span id="sync-badge" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">Syncing...</span>
+                        <span class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                        </span>
+                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E Dashboard</span>
                     </div>
-                    <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 leading-tight">ENERGY REPORT - DEPO SAMPAH LIWET</h1>
-                    <p class="text-xs text-slate-500 mt-0.5">Device ID: <span class="font-mono text-slate-700 font-semibold">UNESA_DEPO_SAMPAH_LIWET</span> (860987054243453)</p>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Depo Sampah Lidah Wetan</h1>
+                    <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono">860987054243453</span> • Pusat Energi & Lingkungan</p>
                 </div>
             </div>
 
-            <!-- Smart-E Badge Logo -->
-            <div class="flex items-center gap-3 self-end md:self-center">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs font-bold text-slate-700">Pusat Energi & Lingkungan</p>
-                    <p class="text-[10px] text-slate-400">Universitas Negeri Surabaya</p>
-                </div>
-                <div class="bg-blue-900 text-white font-extrabold text-lg px-3.5 py-2 rounded-xl tracking-tight shadow-md flex items-center gap-1 shrink-0">
-                    <span>Smart</span><span class="text-amber-400">-E</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- FILTER RENTANG TANGGAL (START DATE - END DATE) -->
-        <div class="bg-blue-900 text-white rounded-2xl p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-200">Filter Pengukuran:</span>
-                
-                <div class="flex items-center gap-2 bg-blue-950/70 p-2 rounded-xl border border-blue-700/50 text-xs">
-                    <label for="start-date" class="text-blue-200 font-medium">Start Date:</label>
-                    <input type="date" id="start-date" style="color-scheme: dark;" class="bg-blue-900 text-white px-2 py-1 rounded outline-none cursor-pointer border border-blue-600">
-                </div>
-
-                <span class="text-blue-300 font-bold">s/d</span>
-
-                <div class="flex items-center gap-2 bg-blue-950/70 p-2 rounded-xl border border-blue-700/50 text-xs">
-                    <label for="end-date" class="text-blue-200 font-medium">End Date:</label>
-                    <input type="date" id="end-date" style="color-scheme: dark;" class="bg-blue-900 text-white px-2 py-1 rounded outline-none cursor-pointer border border-blue-600">
+            <div class="text-right flex flex-col items-end">
+                <div class="bg-teal-800 border border-teal-700 px-4 py-2 rounded-lg text-sm font-medium shadow-inner flex items-center gap-2">
+                    <svg class="w-4 h-4 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span id="sync-badge">Status: Syncing...</span>
                 </div>
             </div>
 
-            <div class="text-right w-full md:w-auto flex justify-between md:block">
-                <span class="text-xs text-blue-200 block md:inline">Total Record: </span>
-                <span id="total-records" class="font-mono font-bold text-amber-400 text-base">0 Data</span>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="max-w-7xl mx-auto w-full px-4 md:px-8 -mt-8 space-y-6 pb-12">
+        
+        <!-- TOOLBAR FILTER -->
+        <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="bg-teal-100 p-2 rounded-lg text-teal-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium">
+                    <input type="date" id="start-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                    <span class="text-gray-400">s/d</span>
+                    <input type="date" id="end-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                </div>
+            </div>
+            <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+                Total Data: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
             </div>
         </div>
 
-        <!-- METRIC CARDS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase">Tegangan Rerata</p>
-                <p class="text-2xl font-black text-blue-600 mt-1" id="card-voltage">0 V</p>
+        <!-- KARTU METRIK -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
+                <p class="text-sm text-gray-500 font-medium">Tegangan Rerata</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-1" id="card-voltage">0 <span class="text-base text-gray-400">V</span></h3>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase">Arus Rerata</p>
-                <p class="text-2xl font-black text-emerald-600 mt-1" id="card-current">0 A</p>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-emerald-500">
+                <p class="text-sm text-gray-500 font-medium">Arus Rerata</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-1" id="card-current">0 <span class="text-base text-gray-400">A</span></h3>
             </div>
-            <!-- REVISI DOSPEM: KARTU TOTAL DAYA DIUBAH JADI RERATA THD -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rerata THD (V & I)</h3>
-                <div class="flex items-baseline gap-2">
-                    <span id="avg-thd-v" class="text-2xl font-black text-purple-600">0%</span>
-                    <span class="text-sm font-bold text-slate-400">V</span>
-                    <span class="text-xl font-black text-slate-300">|</span>
-                    <span id="avg-thd-i" class="text-2xl font-black text-orange-500">0%</span>
-                    <span class="text-sm font-bold text-slate-400">I</span>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
+                <p class="text-sm text-gray-500 font-medium">Rerata THD (V & I)</p>
+                <div class="flex items-end gap-2 mt-1">
+                    <h3 class="text-3xl font-bold text-purple-600" id="avg-thd-v">0%</h3>
+                    <span class="text-xl text-gray-300 mb-1">/</span>
+                    <h3 class="text-2xl font-bold text-orange-500 mb-0.5" id="avg-thd-i">0%</h3>
                 </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase">Power Factor / Freq</p>
-                <p class="text-2xl font-black text-amber-600 mt-1" id="card-pf">0 PF</p>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-amber-500">
+                <p class="text-sm text-gray-500 font-medium">PF & Frekuensi</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1" id="card-pf">0 PF</h3>
             </div>
         </div>
 
-        <!-- CHARTS SECTION -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 1. Tegangan 3-Fasa -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">1. Tegangan 3-Fasa (Voltage)</h3>
-                    <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded">Volt (V)</span>
-                </div>
-                <div class="h-64"><canvas id="chartVoltage"></canvas></div>
+        <!-- GRAFIK 2x2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    Tegangan 3-Fasa
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Volt (V)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartVoltage"></canvas></div>
             </div>
 
-            <!-- 2. Arus Listrik 3-Fasa -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Arus Listrik 3-Fasa (Current)</h3>
-                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded">Ampere (A)</span>
-                </div>
-                <div class="h-64"><canvas id="chartCurrent"></canvas></div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    Arus Listrik 3-Fasa
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Ampere (A)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartCurrent"></canvas></div>
             </div>
 
-            <!-- 3. Daya Aktif per Fasa -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Daya Aktif per Fasa (Active Power)</h3>
-                    <span class="text-[10px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded">Watt (W)</span>
-                </div>
-                <div class="h-64"><canvas id="chartPowerPhase"></canvas></div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    Daya Aktif per Fasa
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Watt (W)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartPowerPhase"></canvas></div>
             </div>
 
-            <!-- REVISI DOSPEM: 4. GRAFIK THD (Pengganti Total Power) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">4. Grafik THD (Tegangan & Arus)</h3>
-                    <span class="text-[10px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded">Persen (%)</span>
-                </div>
-                <div class="h-64"><canvas id="chartTHD"></canvas></div>
+            <!-- GRAFIK THD TEGANGAN PER FASA -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    THD Tegangan per Fasa
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartTHD"></canvas></div>
             </div>
         </div>
 
-        <!-- TABEL DATA UTAMA -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
-                <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Tabel Data Pengukuran Telemetri</h2>
-                <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full">Format Waktu: YYYY-MM-DD HH:mm:ss</span>
+        <!-- TABEL DATA -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 p-4 border-b border-gray-200">
+                <h2 class="text-sm font-semibold text-gray-800">Riwayat Pengukuran Telemetri</h2>
             </div>
-
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs md:text-sm">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-500 uppercase font-semibold text-[11px] border-b border-slate-200">
-                            <th class="py-3 px-4">Waktu Sampel</th>
-                            <th class="py-3 px-4 text-center">Tegangan (V) [A/B/C]</th>
-                            <th class="py-3 px-4 text-center">Arus (A) [A/B/C]</th>
-                            <!-- Kolom Daya Aktif (W) Dihapus -->
-                            <th class="py-3 px-4 text-center">Frekuensi</th>
-                            <th class="py-3 px-4 text-center">Power Factor</th>
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-teal-800 text-white">
+                        <tr>
+                            <th class="py-3 px-5 font-medium">Waktu Sampel</th>
+                            <th class="py-3 px-5 font-medium text-center">Tegangan (V) <span class="text-teal-300 text-xs">[A/B/C]</span></th>
+                            <th class="py-3 px-5 font-medium text-center">Arus (A) <span class="text-teal-300 text-xs">[A/B/C]</span></th>
+                            <th class="py-3 px-5 font-medium text-center">Frekuensi</th>
+                            <th class="py-3 px-5 font-medium text-center">Power Factor</th>
                         </tr>
                     </thead>
-                    <tbody id="telemetry-table-body" class="divide-y divide-slate-100">
-                        <tr><td colspan="5" class="py-6 text-center text-slate-400">Memuat data telemetri...</td></tr>
+                    <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700">
+                        <tr><td colspan="5" class="py-8 text-center text-gray-400">Sedang memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-    </div>
+    </main>
 
     <script>
         let allTelemetryData = [];
@@ -175,7 +164,7 @@
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
-            return `${ts.substring(6,8)}/${ts.substring(4,6)} ${ts.substring(8,10)}:${ts.substring(10,12)}`;
+            return `${ts.substring(8,10)}:${ts.substring(10,12)} (${ts.substring(6,8)}/${ts.substring(4,6)})`;
         }
 
         function formatWaktuTabel(ts) {
@@ -185,25 +174,22 @@
 
         async function initData() {
             try {
-                // Anti-Cache parameter t=
                 const response = await fetch('./data.json?t=' + new Date().getTime());
-                if (!response.ok) throw new Error("File data.json tidak ditemukan");
+                if (!response.ok) throw new Error("Gagal mengambil data.json");
                 
                 const result = await response.json();
                 allTelemetryData = result.data || [];
 
                 if (allTelemetryData.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500 font-bold">Data tidak ditemukan.</td></tr>`;
+                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Tidak ada rekaman data.</td></tr>`;
                     return;
                 }
 
                 const startDateInput = document.getElementById('start-date');
                 const endDateInput = document.getElementById('end-date');
 
-                // REVISI DOSPEM: Set default tanggal ke HARI INI SAJA saat pertama kali dimuat
                 if (!startDateInput.value || !endDateInput.value) {
                     const now = new Date();
-                    // Menyesuaikan dengan zona waktu lokal (WIB)
                     const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                     startDateInput.value = today;
                     endDateInput.value = today;
@@ -212,11 +198,11 @@
                 filterAndRenderData();
 
                 const nowTime = new Date();
-                document.getElementById('sync-badge').innerText = `Sync: ${nowTime.toTimeString().split(' ')[0]}`;
+                document.getElementById('sync-badge').innerText = `Diperbarui: ${nowTime.toTimeString().split(' ')[0]}`;
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500">Gagal mengambil data telemetri.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Gagal terhubung ke data lokal.</td></tr>`;
             }
         }
 
@@ -233,24 +219,23 @@
                 return item.timestamp >= startCompact && item.timestamp <= endCompact;
             });
 
-            document.getElementById('total-records').innerText = `${filteredData.length} Data`;
+            document.getElementById('total-records').innerText = filteredData.length;
 
             const tbody = document.getElementById('telemetry-table-body');
             tbody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-amber-600 font-medium">Tidak ada data untuk rentang tanggal ${startVal} s/d ${endVal}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-orange-500">Tidak ada data di rentang waktu ini.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 return;
             }
 
             const latest = filteredData[0].measurement;
-            document.getElementById('card-voltage').innerText = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} V`;
-            document.getElementById('card-current').innerText = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} A`;
-            document.getElementById('card-pf').innerText = `${latest.power_factor.total} PF / ${latest.frequency_hz}Hz`;
+            document.getElementById('card-voltage').innerHTML = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} <span class="text-base text-gray-400">V</span>`;
+            document.getElementById('card-current').innerHTML = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} <span class="text-base text-gray-400">A</span>`;
+            document.getElementById('card-pf').innerHTML = `${latest.power_factor.total} <span class="text-sm text-gray-400 font-normal">/ ${latest.frequency_hz}Hz</span>`;
 
-            // Hitung Rerata THD V dan I dari seluruh data yang terfilter
             let sumThdV = 0, sumThdI = 0, countThd = 0;
             filteredData.forEach(item => {
                 const tv = item.measurement.thd_v || { a: 0, b: 0, c: 0 };
@@ -259,22 +244,20 @@
                 sumThdI += (ti.a + ti.b + ti.c) / 3;
                 countThd++;
             });
-            const avgThdV = countThd > 0 ? (sumThdV / countThd).toFixed(2) : 0;
-            const avgThdI = countThd > 0 ? (sumThdI / countThd).toFixed(2) : 0;
             
-            document.getElementById('avg-thd-v').innerText = `${avgThdV}%`;
-            document.getElementById('avg-thd-i').innerText = `${avgThdI}%`;
+            document.getElementById('avg-thd-v').innerText = countThd > 0 ? (sumThdV / countThd).toFixed(2) + '%' : '0%';
+            document.getElementById('avg-thd-i').innerText = countThd > 0 ? (sumThdI / countThd).toFixed(2) + '%' : '0%';
 
             filteredData.forEach(item => {
                 const m = item.measurement;
                 const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50";
+                row.className = "odd:bg-white even:bg-teal-50/30 hover:bg-teal-50 transition-colors";
                 row.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-slate-700">${formatWaktuTabel(item.timestamp)}</td>
-                    <td class="py-3 px-4 text-center font-medium"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
-                    <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
-                    <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
-                    <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
+                    <td class="py-3 px-5 font-mono text-sm">${formatWaktuTabel(item.timestamp)}</td>
+                    <td class="py-3 px-5 text-center"><span class="font-medium text-blue-600">${m.voltage_v.a}</span> <span class="text-gray-300">|</span> <span class="font-medium text-emerald-600">${m.voltage_v.b}</span> <span class="text-gray-300">|</span> <span class="font-medium text-rose-600">${m.voltage_v.c}</span></td>
+                    <td class="py-3 px-5 text-center"><span class="font-medium text-blue-600">${m.current_a.a}</span> <span class="text-gray-300">|</span> <span class="font-medium text-emerald-600">${m.current_a.b}</span> <span class="text-gray-300">|</span> <span class="font-medium text-rose-600">${m.current_a.c}</span></td>
+                    <td class="py-3 px-5 text-center">${m.frequency_hz} Hz</td>
+                    <td class="py-3 px-5 text-center">${m.power_factor.total}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -283,12 +266,30 @@
         }
 
         function resetCards() {
-            document.getElementById('card-voltage').innerText = `0 V`;
-            document.getElementById('card-current').innerText = `0 A`;
+            document.getElementById('card-voltage').innerHTML = `0 <span class="text-base text-gray-400">V</span>`;
+            document.getElementById('card-current').innerHTML = `0 <span class="text-base text-gray-400">A</span>`;
             document.getElementById('avg-thd-v').innerText = `0%`;
             document.getElementById('avg-thd-i').innerText = `0%`;
-            document.getElementById('card-pf').innerText = `0 PF`;
+            document.getElementById('card-pf').innerHTML = `0 PF`;
         }
+
+        // Konfigurasi umum chart
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            elements: {
+                line: { tension: 0.4 }, 
+                point: { radius: 0, hitRadius: 10, hoverRadius: 4 }
+            },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Poppins' } } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { grid: { borderDash: [4, 4], color: '#e5e7eb' } }
+            }
+        };
 
         function renderCharts(dataList) {
             if (chartV) chartV.destroy();
@@ -301,97 +302,85 @@
             const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
-            // 1. Chart Tegangan
+            // Chart 1: Tegangan
             chartV = new Chart(document.getElementById('chartVoltage'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Voltage A', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#2563eb', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Voltage B', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Voltage C', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', borderWidth: 1.5, pointRadius: 0 }
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement.voltage_v.a), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement.voltage_v.b), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement.voltage_v.c), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
 
-            // 2. Chart Arus
+            // Chart 2: Arus
             chartI = new Chart(document.getElementById('chartCurrent'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Current A', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#2563eb', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Current B', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Current C', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', borderWidth: 1.5, pointRadius: 0 }
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement.current_a.a), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement.current_a.b), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement.current_a.c), borderColor: '#f43f5e', borderWidth: 2 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
 
-            // 3. Chart Daya Aktif per Fasa
+            // Chart 3: Daya Aktif
             chartP = new Chart(document.getElementById('chartPowerPhase'), {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Power A', data: chartData.map(d => d.measurement.active_power_w.a), borderColor: '#2563eb', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Power B', data: chartData.map(d => d.measurement.active_power_w.b), borderColor: '#10b981', borderWidth: 1.5, pointRadius: 0 },
-                        { label: 'Power C', data: chartData.map(d => d.measurement.active_power_w.c), borderColor: '#f43f5e', borderWidth: 1.5, pointRadius: 0 }
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement.active_power_w.a), backgroundColor: '#60a5fa' },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement.active_power_w.b), backgroundColor: '#34d399' },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement.active_power_w.c), backgroundColor: '#fb7185' }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { ...commonOptions, elements: {} } 
             });
 
-            // REVISI DOSPEM: 4. Chart Rerata THD Tegangan & Arus
+            // Chart 4: THD TEGANGAN PER FASA
             chartTHD = new Chart(document.getElementById('chartTHD'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
                         { 
-                            label: 'Rerata THD Tegangan (V)', 
-                            data: chartData.map(d => {
-                                const tv = d.measurement.thd_v || { a: 0, b: 0, c: 0 };
-                                return ((tv.a + tv.b + tv.c) / 3) || 0;
-                            }), 
-                            borderColor: '#9333ea', // Ungu
-                            backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                            borderWidth: 1.5, 
-                            pointRadius: 0,
-                            tension: 0.4
+                            label: 'THD V (Fasa R)', 
+                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.a : 0), 
+                            borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true
                         },
                         { 
-                            label: 'Rerata THD Arus (I)', 
-                            data: chartData.map(d => {
-                                const ti = d.measurement.thd_i || { a: 0, b: 0, c: 0 };
-                                return ((ti.a + ti.b + ti.c) / 3) || 0;
-                            }), 
-                            borderColor: '#f97316', // Oranye
-                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                            borderWidth: 1.5, 
-                            pointRadius: 0,
-                            tension: 0.4
+                            label: 'THD V (Fasa S)', 
+                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.b : 0), 
+                            borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true
+                        },
+                        {
+                            label: 'THD V (Fasa T)', 
+                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.c : 0), 
+                            borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true
                         }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
         }
 
-        // Anti Inspect Element
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
-                return false;
-            }
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
         };
 
         document.addEventListener("DOMContentLoaded", () => {
             initData();
             document.getElementById('start-date').addEventListener('change', filterAndRenderData);
             document.getElementById('end-date').addEventListener('change', filterAndRenderData);
-            setInterval(initData, 180000); // Auto update 3 menit
+            setInterval(initData, 180000); 
         });
     </script>
 </body>
