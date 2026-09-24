@@ -140,7 +140,7 @@
             </div>
         </div>
 
-        <!-- TABEL DATA PENGUKURAN (MONACOLISA STYLE) -->
+        <!-- TABEL DATA PENGUKURAN -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <!-- Header Tabel & Tombol Aksi -->
             <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
@@ -463,7 +463,6 @@
             document.getElementById('card-pf').innerHTML = `0 PF`;
         }
 
-        // Konfigurasi Opsi Grafik (Termasuk Memaksa Label Jam Terbaru Muncul)
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
@@ -484,7 +483,7 @@
                         minRotation: 45,
                         autoSkip: true,
                         maxTicksLimit: 12,
-                        includeBounds: true // Memaksa label jam pertama & jam TERBARU agar selalu tercetak di sumbu X
+                        includeBounds: true
                     }
                 },
                 y: { grid: { borderDash: [4, 4], color: '#e5e7eb' } }
@@ -502,7 +501,6 @@
 
             if (dataList.length === 0) return;
 
-            // Ambil 30 titik data terbaru agar jarak waktu tidak terlalu padat
             const slicedData = dataList.slice(0, 30);
             const chartData = [...slicedData].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
@@ -550,7 +548,9 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{ label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.1)', borderWidth: 2, fill: true }]
+                    datasets: [
+                        { label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true }
+                    ]
                 },
                 options: commonOptions
             });
@@ -560,9 +560,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'THD V (Fasa R)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                        { label: 'THD V (Fasa S)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                        { label: 'THD V (Fasa T)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                        { label: 'Fasa R', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
                     ]
                 },
                 options: commonOptions
@@ -573,9 +573,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'THD I (Fasa R)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                        { label: 'THD I (Fasa S)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                        { label: 'THD I (Fasa T)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                        { label: 'Fasa R', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
                     ]
                 },
                 options: commonOptions
@@ -585,29 +585,31 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{ label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true }]
+                    datasets: [
+                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.1)', borderWidth: 2, fill: true }
+                    ]
                 },
                 options: commonOptions
             });
         }
 
-        // Auto Refresh Interval (10 detik)
         setInterval(() => {
-            if (!isPaused) {
-                countdown--;
-                if (countdown <= 0) {
-                    initData();
-                    countdown = 10;
-                }
-                document.getElementById('timer-count').innerText = `${countdown}s`;
+            if (isPaused) return;
+            countdown--;
+            if (countdown <= 0) {
+                initData();
+                countdown = 10;
             }
+            const timerCount = document.getElementById('timer-count');
+            if (timerCount) timerCount.innerText = countdown + 's';
         }, 1000);
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('start-date').addEventListener('change', filterAndRenderData);
+        document.getElementById('end-date').addEventListener('change', filterAndRenderData);
+
+        window.onload = () => {
             initData();
-            document.getElementById('start-date').addEventListener('change', filterAndRenderData);
-            document.getElementById('end-date').addEventListener('change', filterAndRenderData);
-        });
+        };
     </script>
 </body>
 </html>
