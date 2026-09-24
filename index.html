@@ -53,15 +53,17 @@
     <!-- KONTEN UTAMA -->
     <main class="max-w-7xl mx-auto w-full px-4 md:px-8 -mt-8 space-y-6 pb-12">
         
-        <!-- TOOLBAR FILTER -->
+        <!-- TOOLBAR FILTER RENTANG TANGGAL -->
         <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3 w-full md:w-auto">
                 <div class="bg-teal-100 p-2 rounded-lg text-teal-800">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </div>
-                <div class="flex items-center gap-2 text-sm font-medium">
+                <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
                     <input type="date" id="start-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
-                    <button onclick="fetchEnergyData()" class="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Ambil Data</button>
+                    <span class="text-gray-400">s/d</span>
+                    <input type="date" id="end-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                    <button onclick="fetchEnergyData()" class="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-1">Terapkan Filter</button>
                 </div>
             </div>
             <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
@@ -194,7 +196,7 @@
             <!-- PAGINASI BAWAH -->
             <div class="p-3 bg-white border-t border-gray-200 flex flex-col sm:flex-row justify-end items-center gap-4 text-xs text-gray-600">
                 <div class="flex items-center gap-2">
-                    <span>Limit Data</span>
+                    <span>Limit Data per Hari</span>
                     <select id="limit-size" onchange="fetchEnergyData()" class="border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
                         <option value="10">10</option>
                         <option value="25" selected>25</option>
@@ -219,45 +221,79 @@
         let telemetryData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
 
-        // FUNGSI UTAMA UNTUK FETCH DATA DARI REST API
-        async function fetchEnergyData() {
-            const dateVal = document.getElementById('start-date').value;
-            const limitVal = document.getElementById('limit-size').value;
-            
-            updateStatusBadge("Fetching API...", "amber");
+        // FUNGSI MEMBENTUK LIST TANGGAL DARI RENTANG
+        function getDatesInRange(startDateStr, endDateStr) {
+            const dateList = [];
+            let curr = new Date(startDateStr);
+            const end = new Date(endDateStr);
 
-            const url = `${API_CONFIG.baseUrl}?device_imei=${API_CONFIG.deviceImei}&tanggal=${dateVal}&limit=${limitVal}&sort=DESC`;
+            while (curr <= end) {
+                const year = curr.getFullYear();
+                const month = String(curr.getMonth() + 1).padStart(2, '0');
+                const day = String(curr.getDate()).padStart(2, '0');
+                dateList.push(`${year}-${month}-${day}`);
+                curr.setDate(curr.getDate() + 1);
+            }
+            return dateList;
+        }
+
+        // FUNGSI UTAMA FETCH DATA RENTANG TANGGAL
+        async function fetchEnergyData() {
+            const startDateVal = document.getElementById('start-date').value;
+            const endDateVal = document.getElementById('end-date').value;
+            const limitVal = document.getElementById('limit-size').value;
+
+            if (!startDateVal || !endDateVal) {
+                return alert("Silakan pilih Tanggal Mulai dan Tanggal Selesai!");
+            }
+
+            if (startDateVal > endDateVal) {
+                return alert("Tanggal Mulai tidak boleh melebihi Tanggal Selesai!");
+            }
+
+            updateStatusBadge("Fetching Range Data...", "amber");
+
+            const datesToFetch = getDatesInRange(startDateVal, endDateVal);
+            let combinedData = [];
 
             try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'X-API-KEY': API_CONFIG.apiKey,
-                        'Accept': 'application/json'
+                // Eksekusi request API secara simultan/paralel untuk setiap tanggal
+                const fetchPromises = datesToFetch.map(dateStr => {
+                    const url = `${API_CONFIG.baseUrl}?device_imei=${API_CONFIG.deviceImei}&tanggal=${dateStr}&limit=${limitVal}&sort=DESC`;
+                    return fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'X-API-KEY': API_CONFIG.apiKey,
+                            'Accept': 'application/json'
+                        }
+                    }).then(res => res.ok ? res.json() : null);
+                });
+
+                const results = await Promise.all(fetchPromises);
+
+                results.forEach(res => {
+                    if (res && res.status === 'success' && Array.isArray(res.data)) {
+                        combinedData.push(...res.data);
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP Error ${response.status}`);
-                }
+                // Urutkan data gabungan secara descending berdasarkan timestamp (data terbaru di atas)
+                combinedData.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.data) {
-                    telemetryData = result.data;
-                    document.getElementById('total-records').innerText = result.pagination?.total_records || telemetryData.length;
-                    
+                telemetryData = combinedData;
+                document.getElementById('total-records').innerText = telemetryData.length;
+
+                if (telemetryData.length > 0) {
                     renderUI();
-                    
                     const nowTime = new Date();
                     updateStatusBadge(`Updated (${nowTime.toTimeString().split(' ')[0]})`, "emerald");
                 } else {
-                    showErrorTable("Tidak ada data ditemukan untuk parameter ini.");
+                    showErrorTable("Tidak ada data ditemukan dalam rentang tanggal ini.");
                     updateStatusBadge("No Data", "amber");
                 }
 
             } catch (error) {
-                console.error("Gagal mengambil data REST API:", error);
+                console.error("Gagal mengambil data rentang tanggal:", error);
                 showErrorTable(`Gagal terhubung ke API: ${error.message}`);
                 updateStatusBadge("API Connection Error", "red");
             }
@@ -270,7 +306,7 @@
                 return;
             }
 
-            // Metrik Kartu (Data Paling Terkini/Index 0)
+            // Metrik Kartu (Data Paling Terkini)
             const latest = telemetryData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
@@ -360,7 +396,7 @@
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
-            return `${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
+            return `${ts.substring(4,6)}/${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}`;
         }
 
         function formatWaktuTabel(ts) {
@@ -393,11 +429,11 @@
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            elements: { line: { tension: 0.2 }, point: { radius: 2 } },
+            elements: { line: { tension: 0.2 }, point: { radius: 1.5 } },
             interaction: { mode: 'index', intersect: false },
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Poppins', size: 10 } } } },
             scales: {
-                x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 9 }, maxTicksLimit: 10 } },
+                x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 9 }, maxTicksLimit: 12 } },
                 y: { grid: { borderDash: [3, 3], color: '#f1f5f9' } }
             }
         };
@@ -411,7 +447,8 @@
             if (chartTHDI) chartTHDI.destroy();
             if (chartFreq) chartFreq.destroy();
 
-            const chartData = [...dataList].reverse();
+            // Ambil maksimal 50 data poin untuk ditampilkan di chart agar tidak crowded
+            const chartData = [...dataList].slice(0, 50).reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
             chartV = new Chart(document.getElementById('chartVoltage'), {
@@ -506,7 +543,9 @@
         window.onload = () => {
             const now = new Date();
             const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            
             document.getElementById('start-date').value = today;
+            document.getElementById('end-date').value = today;
             document.getElementById('display-device-id').innerText = API_CONFIG.deviceImei;
 
             fetchEnergyData();
