@@ -486,51 +486,45 @@
             }
         };
 
-       function renderCharts(dataList) {
-    if (chartV) chartV.destroy();
-    if (chartI) chartI.destroy();
-    if (chartP) chartP.destroy();
-    if (chartPF) chartPF.destroy();
-    if (chartTHDV) chartTHDV.destroy();
-    if (chartTHDI) chartTHDI.destroy();
-    if (chartFreq) chartFreq.destroy();
+ function renderCharts(dataList) {
+            if (chartV) chartV.destroy();
+            if (chartI) chartI.destroy();
+            if (chartP) chartP.destroy();
+            if (chartPF) chartPF.destroy();
+            if (chartTHDV) chartTHDV.destroy();
+            if (chartTHDI) chartTHDI.destroy();
+            if (chartFreq) chartFreq.destroy();
 
-    if (dataList.length === 0) return;
+            if (dataList.length === 0) return;
 
-    // SOLUSI: Batasi grafik hanya menampilkan 50 titik data terbaru.
-    // Hal ini membuat grafik tidak terlalu padat dan pergeseran waktu (sumbu X)
-    // akan langsung terlihat bergeser ke kiri setiap kali ada data baru masuk.
-    const slicedData = dataList.slice(0, 50);
-    
-    // Balik urutan agar waktu terlama di sebelah kiri dan terbaru di kanan
-    const chartData = [...slicedData].reverse();
-    const labels = chartData.map(d => formatLabelChart(d.timestamp));
+            const chartData = [...dataList].reverse();
+            const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
-    chartV = new Chart(document.getElementById('chartVoltage'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Fasa R', data: chartData.map(d => d.measurement?.voltage_v?.a ?? 0), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true },
-                { label: 'Fasa S', data: chartData.map(d => d.measurement?.voltage_v?.b ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true },
-                { label: 'Fasa T', data: chartData.map(d => d.measurement?.voltage_v?.c ?? 0), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true }
-            ]
-        },
-        options: commonOptions
-    });
+            chartV = new Chart(document.getElementById('chartVoltage'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement?.voltage_v?.a ?? 0), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement?.voltage_v?.b ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement?.voltage_v?.c ?? 0), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true }
+                    ]
+                },
+                options: commonOptions
+            });
 
-    chartI = new Chart(document.getElementById('chartCurrent'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Fasa R', data: chartData.map(d => d.measurement?.current_a?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                { label: 'Fasa S', data: chartData.map(d => d.measurement?.current_a?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                { label: 'Fasa T', data: chartData.map(d => d.measurement?.current_a?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
-            ]
-        },
-        options: commonOptions
-    });
+            chartI = new Chart(document.getElementById('chartCurrent'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement?.current_a?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement?.current_a?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement?.current_a?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                    ]
+                },
+                options: commonOptions
+            });
 
     chartP = new Chart(document.getElementById('chartPowerPhase'), {
         type: 'line',
