@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <!-- KARTU METRIK RINGKASAN -->
+        <!-- KARTU METRIK -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
                 <p class="text-sm text-gray-500 font-medium">Tegangan Rerata</p>
@@ -94,94 +94,130 @@
             </div>
         </div>
 
-        <!-- GRID GRAFIK LENGKAP (7 GRAFIK) -->
+        <!-- GRAFIK -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- 1. Tegangan 3-Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Tegangan 3-Fasa
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Volt (V)</span>
+                    Tegangan 3-Fasa <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Volt (V)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartVoltage"></canvas></div>
             </div>
-
-            <!-- 2. Arus Listrik 3-Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Arus Listrik 3-Fasa
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Ampere (A)</span>
+                    Arus Listrik 3-Fasa <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Ampere (A)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartCurrent"></canvas></div>
             </div>
-
-            <!-- 3. Daya Aktif per Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Daya Aktif per Fasa
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Watt (W)</span>
+                    Daya Aktif per Fasa <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Watt (W)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartPowerPhase"></canvas></div>
             </div>
-
-            <!-- 4. Power Factor Total -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Power Factor Total (Cos φ)
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">PF Total</span>
+                    Power Factor Total (Cos φ) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">PF Total</span>
                 </h3>
                 <div class="h-60"><canvas id="chartPF"></canvas></div>
             </div>
-
-            <!-- 5. THD Tegangan per Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    THD Tegangan (THD Voltage)
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                    THD Tegangan (THD Voltage) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartTHDV"></canvas></div>
             </div>
-
-            <!-- 6. THD Arus per Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    THD Arus (THD Current)
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                    THD Arus (THD Current) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartTHDI"></canvas></div>
             </div>
-
-            <!-- 7. Frekuensi Listrik -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Frekuensi Listrik (Frequency)
-                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Hertz (Hz)</span>
+                    Frekuensi Listrik (Frequency) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Hertz (Hz)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartFrequency"></canvas></div>
             </div>
-
         </div>
 
-        <!-- TABEL DATA -->
+        <!-- TABEL DATA PENGUKURAN (MONACOLISA STYLE) -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="bg-gray-50 p-4 border-b border-gray-200">
-                <h2 class="text-sm font-semibold text-gray-800">Riwayat Pengukuran Telemetri</h2>
+            <!-- Header Tabel & Tombol Aksi -->
+            <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
+                <div>
+                    <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Riwayat data telemetri power meter sesuai filter perangkat & tanggal</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span id="auto-refresh-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded font-medium flex items-center gap-1.5">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Auto Refresh: <span id="timer-count">10s</span>
+                    </span>
+                    <button id="btn-pause" onclick="togglePause()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
+                        ⏸ Pause
+                    </button>
+                    <button onclick="initData()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
+                        🔄 Refresh
+                    </button>
+                    <button onclick="exportCSV()" class="px-3 py-1.5 bg-white border border-blue-600 text-blue-600 rounded font-medium hover:bg-blue-50 flex items-center gap-1 transition-colors">
+                        📥 Export CSV
+                    </button>
+                </div>
             </div>
+
+            <!-- Tabel Data -->
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm whitespace-nowrap">
-                    <thead class="bg-teal-800 text-white">
+                <table class="w-full text-center text-xs whitespace-nowrap border-collapse">
+                    <thead class="bg-gray-50 text-gray-700 border-b border-gray-200 font-semibold">
                         <tr>
-                            <th class="py-3 px-5 font-medium">Waktu Sampel</th>
-                            <th class="py-3 px-5 font-medium text-center">Tegangan (V) <span class="text-teal-300 text-xs">[A/B/C]</span></th>
-                            <th class="py-3 px-5 font-medium text-center">Arus (A) <span class="text-teal-300 text-xs">[A/B/C]</span></th>
-                            <th class="py-3 px-5 font-medium text-center">Frekuensi</th>
-                            <th class="py-3 px-5 font-medium text-center">Power Factor</th>
+                            <th rowspan="2" class="py-2.5 px-3 border-r border-gray-200">No</th>
+                            <th rowspan="2" class="py-2.5 px-4 border-r border-gray-200 text-left">Timestamp</th>
+                            <th colspan="3" class="py-1.5 px-3 border-r border-gray-200 border-b">Tegangan (V)</th>
+                            <th colspan="3" class="py-1.5 px-3 border-r border-gray-200 border-b">Arus (A)</th>
+                            <th colspan="3" class="py-1.5 px-3 border-r border-gray-200 border-b">Daya Aktif (W)</th>
+                            <th rowspan="2" class="py-2.5 px-3 border-r border-gray-200">PF Total</th>
+                            <th rowspan="2" class="py-2.5 px-3 border-r border-gray-200">Frekuensi</th>
+                            <th colspan="3" class="py-1.5 px-3 border-gray-200 border-b">THD Tegangan (%)</th>
+                        </tr>
+                        <tr class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                            <!-- Tegangan Sub-headers -->
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase C</th>
+                            <!-- Arus Sub-headers -->
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase C</th>
+                            <!-- Daya Sub-headers -->
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-bold text-gray-700">Total (W)</th>
+                            <!-- THD Sub-headers -->
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">THD A</th>
+                            <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">THD B</th>
+                            <th class="py-1.5 px-3 font-normal text-gray-500">THD C</th>
                         </tr>
                     </thead>
-                    <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700">
-                        <tr><td colspan="5" class="py-8 text-center text-gray-400">Sedang memuat data...</td></tr>
+                    <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700 bg-white">
+                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Sedang memuat data...</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- PAGINASI BAWAH -->
+            <div class="p-3 bg-white border-t border-gray-200 flex flex-col sm:flex-row justify-end items-center gap-4 text-xs text-gray-600">
+                <div class="flex items-center gap-2">
+                    <span>Page Size</span>
+                    <select id="page-size" onchange="changePageSize()" class="border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-1" id="pagination-controls">
+                    <!-- Tombol Paginasi Generated Dynamic -->
+                </div>
             </div>
         </div>
 
@@ -189,7 +225,15 @@
 
     <script>
         let allTelemetryData = [];
+        let currentFilteredData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
+        
+        // Paginasi & Refresh state
+        let currentPage = 1;
+        let pageSize = 25;
+        let isPaused = false;
+        let countdown = 10;
+        let timerInterval;
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
@@ -210,7 +254,7 @@
                 allTelemetryData = result.data || [];
 
                 if (allTelemetryData.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Tidak ada rekaman data.</td></tr>`;
+                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-red-500">Tidak ada rekaman data.</td></tr>`;
                     return;
                 }
 
@@ -231,7 +275,7 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">Gagal terhubung ke data lokal.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-red-500">Gagal terhubung ke data lokal.</td></tr>`;
             }
         }
 
@@ -244,23 +288,22 @@
             const startCompact = startVal.replace(/-/g, '') + '000000';
             const endCompact = endVal.replace(/-/g, '') + '235959';
 
-            const filteredData = allTelemetryData.filter(item => {
+            currentFilteredData = allTelemetryData.filter(item => {
                 return item.timestamp >= startCompact && item.timestamp <= endCompact;
             });
 
-            document.getElementById('total-records').innerText = filteredData.length;
+            document.getElementById('total-records').innerText = currentFilteredData.length;
 
-            const tbody = document.getElementById('telemetry-table-body');
-            tbody.innerHTML = '';
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-orange-500">Tidak ada data di rentang waktu ini.</td></tr>`;
+            if (currentFilteredData.length === 0) {
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data di rentang waktu ini.</td></tr>`;
                 resetCards();
                 renderCharts([]);
+                renderPaginationControls(0);
                 return;
             }
 
-            const latest = filteredData[0].measurement || {};
+            // Update kartu ringkasan
+            const latest = currentFilteredData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
             const pf = latest.power_factor || { total: 0 };
@@ -270,7 +313,7 @@
             document.getElementById('card-pf').innerHTML = `${pf.total ?? 0} <span class="text-sm text-gray-400 font-normal">/ ${latest.frequency_hz || 0}Hz</span>`;
 
             let sumThdV = 0, sumThdI = 0, countThd = 0;
-            filteredData.forEach(item => {
+            currentFilteredData.forEach(item => {
                 const m = item.measurement || {};
                 const tv = m.thd_voltage_pct || m.thd_v || { a: 0, b: 0, c: 0 };
                 const ti = m.thd_current_pct || m.thd_i || { a: 0, b: 0, c: 0 };
@@ -283,25 +326,139 @@
             document.getElementById('avg-thd-v').innerText = countThd > 0 ? (sumThdV / countThd).toFixed(2) + '%' : '0%';
             document.getElementById('avg-thd-i').innerText = countThd > 0 ? (sumThdI / countThd).toFixed(2) + '%' : '0%';
 
-            filteredData.forEach(item => {
+            renderTablePage();
+            renderCharts(currentFilteredData);
+        }
+
+        function renderTablePage() {
+            const tbody = document.getElementById('telemetry-table-body');
+            tbody.innerHTML = '';
+
+            const totalItems = currentFilteredData.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const pageData = currentFilteredData.slice(startIndex, startIndex + pageSize);
+
+            pageData.forEach((item, index) => {
                 const m = item.measurement || {};
                 const v = m.voltage_v || { a: 0, b: 0, c: 0 };
                 const i = m.current_a || { a: 0, b: 0, c: 0 };
+                const p = m.active_power_w || { a: 0, b: 0, c: 0, total: 0 };
                 const pf = m.power_factor || { total: 0 };
+                const tv = m.thd_voltage_pct || m.thd_v || { a: 0, b: 0, c: 0 };
+
+                const pTotalCalculated = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
 
                 const row = document.createElement('tr');
-                row.className = "odd:bg-white even:bg-teal-50/30 hover:bg-teal-50 transition-colors";
+                row.className = "hover:bg-gray-50 border-b border-gray-100 transition-colors";
                 row.innerHTML = `
-                    <td class="py-3 px-5 font-mono text-sm">${formatWaktuTabel(item.timestamp)}</td>
-                    <td class="py-3 px-5 text-center"><span class="font-medium text-blue-600">${v.a}</span> <span class="text-gray-300">|</span> <span class="font-medium text-emerald-600">${v.b}</span> <span class="text-gray-300">|</span> <span class="font-medium text-rose-600">${v.c}</span></td>
-                    <td class="py-3 px-5 text-center"><span class="font-medium text-blue-600">${i.a}</span> <span class="text-gray-300">|</span> <span class="font-medium text-emerald-600">${i.b}</span> <span class="text-gray-300">|</span> <span class="font-medium text-rose-600">${i.c}</span></td>
-                    <td class="py-3 px-5 text-center">${m.frequency_hz || 0} Hz</td>
-                    <td class="py-3 px-5 text-center">${pf.total ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200 text-gray-500">${startIndex + index + 1}</td>
+                    <td class="py-2.5 px-4 border-r border-gray-200 font-mono text-left">${formatWaktuTabel(item.timestamp)}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${v.a ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${v.b ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${v.c ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${i.a ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${i.b ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${i.c ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${p.a ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${p.b ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200 font-bold">${pTotalCalculated}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${pf.total ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${m.frequency_hz ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${tv.a ?? 0}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200">${tv.b ?? 0}</td>
+                    <td class="py-2.5 px-3">${tv.c ?? 0}</td>
                 `;
                 tbody.appendChild(row);
             });
 
-            renderCharts(filteredData);
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const container = document.getElementById('pagination-controls');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40 disabled:hover:bg-white";
+            const activeClass = "px-2.5 py-1 border border-rose-500 bg-rose-50 text-rose-600 font-bold rounded";
+
+            // Tombol First & Prev
+            container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)" class="${btnClass}">First</button>`;
+            container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})" class="${btnClass}">Prev</button>`;
+
+            // Nomor Halaman
+            let startP = Math.max(1, currentPage - 2);
+            let endP = Math.min(totalPages, startP + 4);
+            if (endP - startP < 4) startP = Math.max(1, endP - 4);
+
+            for (let p = startP; p <= endP; p++) {
+                if (p === currentPage) {
+                    container.innerHTML += `<button class="${activeClass}">${p}</button>`;
+                } else {
+                    container.innerHTML += `<button onclick="goToPage(${p})" class="${btnClass}">${p}</button>`;
+                }
+            }
+
+            // Tombol Next & Last
+            container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})" class="${btnClass}">Next</button>`;
+            container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${totalPages})" class="${btnClass}">Last</button>`;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTablePage();
+        }
+
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('page-size').value);
+            currentPage = 1;
+            renderTablePage();
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('btn-pause');
+            if (isPaused) {
+                btn.innerHTML = `▶ Resume`;
+                btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-300');
+            } else {
+                btn.innerHTML = `⏸ Pause`;
+                btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-300');
+            }
+        }
+
+        function exportCSV() {
+            if (currentFilteredData.length === 0) {
+                alert("Tidak ada data untuk diekspor!");
+                return;
+            }
+
+            let csv = 'No,Timestamp,Tegangan_A,Tegangan_B,Tegangan_C,Arus_A,Arus_B,Arus_C,Daya_A,Daya_B,Daya_Total,PF_Total,Frekuensi,THD_V_A,THD_V_B,THD_V_C\n';
+
+            currentFilteredData.forEach((item, index) => {
+                const m = item.measurement || {};
+                const v = m.voltage_v || {};
+                const i = m.current_a || {};
+                const p = m.active_power_w || {};
+                const pf = m.power_factor || {};
+                const tv = m.thd_voltage_pct || m.thd_v || {};
+                const pTotal = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
+
+                csv += `${index + 1},"${formatWaktuTabel(item.timestamp)}",${v.a||0},${v.b||0},${v.c||0},${i.a||0},${i.b||0},${i.c||0},${p.a||0},${p.b||0},${pTotal},${pf.total||0},${m.frequency_hz||0},${tv.a||0},${tv.b||0},${tv.c||0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `Telemetri_PowerMeter_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function resetCards() {
@@ -343,7 +500,6 @@
             const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
-            // 1. Chart Tegangan
             chartV = new Chart(document.getElementById('chartVoltage'), {
                 type: 'line',
                 data: {
@@ -357,7 +513,6 @@
                 options: commonOptions
             });
 
-            // 2. Chart Arus
             chartI = new Chart(document.getElementById('chartCurrent'), {
                 type: 'line',
                 data: {
@@ -371,7 +526,6 @@
                 options: commonOptions
             });
 
-            // 3. Chart Daya Aktif
             chartP = new Chart(document.getElementById('chartPowerPhase'), {
                 type: 'line',
                 data: {
@@ -385,26 +539,15 @@
                 options: commonOptions 
             });
 
-            // 4. Chart Power Factor Total (Cos φ)
             chartPF = new Chart(document.getElementById('chartPF'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        { 
-                            label: 'PF Total', 
-                            data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), 
-                            borderColor: '#0284c7', 
-                            backgroundColor: 'rgba(2, 132, 199, 0.1)', 
-                            borderWidth: 2, 
-                            fill: true 
-                        }
-                    ]
+                    datasets: [{ label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.1)', borderWidth: 2, fill: true }]
                 },
                 options: commonOptions
             });
 
-            // 5. Chart THD Tegangan
             chartTHDV = new Chart(document.getElementById('chartTHDV'), {
                 type: 'line',
                 data: {
@@ -418,7 +561,6 @@
                 options: commonOptions
             });
 
-            // 6. Chart THD Arus
             chartTHDI = new Chart(document.getElementById('chartTHDI'), {
                 type: 'line',
                 data: {
@@ -432,25 +574,27 @@
                 options: commonOptions
             });
 
-            // 7. Chart Frekuensi Listrik
             chartFreq = new Chart(document.getElementById('chartFrequency'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        { 
-                            label: 'Frekuensi (Hz)', 
-                            data: chartData.map(d => d.measurement?.frequency_hz ?? 0), 
-                            borderColor: '#10b981', 
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                            borderWidth: 2, 
-                            fill: true 
-                        }
-                    ]
+                    datasets: [{ label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true }]
                 },
                 options: commonOptions
             });
         }
+
+        // Timer Auto Refresh (10 detik)
+        setInterval(() => {
+            if (!isPaused) {
+                countdown--;
+                if (countdown <= 0) {
+                    initData();
+                    countdown = 10;
+                }
+                document.getElementById('timer-count').innerText = `${countdown}s`;
+            }
+        }, 1000);
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function(e) {
@@ -461,7 +605,6 @@
             initData();
             document.getElementById('start-date').addEventListener('change', filterAndRenderData);
             document.getElementById('end-date').addEventListener('change', filterAndRenderData);
-            setInterval(initData, 180000); 
         });
     </script>
 </body>
