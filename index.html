@@ -330,21 +330,21 @@
                 options: commonOptions
             });
 
-            // Chart 3: Daya Aktif
+            // Chart 3: Daya Aktif (Diubah kembali ke Line Chart / Garis)
             chartP = new Chart(document.getElementById('chartPowerPhase'), {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Fasa R', data: chartData.map(d => d.measurement.active_power_w.a), backgroundColor: '#60a5fa' },
-                        { label: 'Fasa S', data: chartData.map(d => d.measurement.active_power_w.b), backgroundColor: '#34d399' },
-                        { label: 'Fasa T', data: chartData.map(d => d.measurement.active_power_w.c), backgroundColor: '#fb7185' }
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement.active_power_w.a), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement.active_power_w.b), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement.active_power_w.c), borderColor: '#f43f5e', borderWidth: 2 }
                     ]
                 },
-                options: { ...commonOptions, elements: {} } 
+                options: commonOptions 
             });
 
-            // Chart 4: THD TEGANGAN PER FASA
+            // Chart 4: THD TEGANGAN PER FASA (Mengecek eksistensi thd_v agar lebih aman)
             chartTHD = new Chart(document.getElementById('chartTHD'), {
                 type: 'line',
                 data: {
@@ -352,17 +352,17 @@
                     datasets: [
                         { 
                             label: 'THD V (Fasa R)', 
-                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.a : 0), 
+                            data: chartData.map(d => (d.measurement.thd_v && d.measurement.thd_v.a) ? d.measurement.thd_v.a : 0), 
                             borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true
                         },
                         { 
                             label: 'THD V (Fasa S)', 
-                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.b : 0), 
+                            data: chartData.map(d => (d.measurement.thd_v && d.measurement.thd_v.b) ? d.measurement.thd_v.b : 0), 
                             borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true
                         },
                         {
                             label: 'THD V (Fasa T)', 
-                            data: chartData.map(d => d.measurement.thd_v ? d.measurement.thd_v.c : 0), 
+                            data: chartData.map(d => (d.measurement.thd_v && d.measurement.thd_v.c) ? d.measurement.thd_v.c : 0), 
                             borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true
                         }
                     ]
