@@ -1,7 +1,58 @@
 {
     "status": "success",
-    "total": 323,
+    "total": 324,
     "data": [
+        {
+            "meter_id": "spm32-rs232-63",
+            "schema": "spm32.3phase.v1",
+            "message_id": "860987054243453-p15-4958-93-meter",
+            "measurement_valid": true,
+            "measurement": {
+                "power_factor": {
+                    "total": -0.068
+                },
+                "thd_voltage_pct": {
+                    "a": 1.2,
+                    "b": 1.2,
+                    "c": 1.1
+                },
+                "current_a": {
+                    "a": 0,
+                    "b": 0.18,
+                    "c": 0
+                },
+                "thd_current_pct": {
+                    "a": 0,
+                    "b": 0,
+                    "c": 0
+                },
+                "frequency_hz": 50.01,
+                "active_power_w": {
+                    "a": 0,
+                    "b": -6,
+                    "c": 0,
+                    "total": 0
+                },
+                "voltage_v": {
+                    "a": 224.92,
+                    "b": 228.49,
+                    "c": 228.05
+                }
+            },
+            "data_status": "available",
+            "modbus": {
+                "ct_ratio": 1,
+                "core_registers": "40001-40025",
+                "slave_id": 63,
+                "function": 3,
+                "thd_registers": "40801-40806",
+                "pt_ratio": 1
+            },
+            "cycle_id": "860987054243453-p15-4958-93",
+            "sampled_at": "20260924102416",
+            "sample_age_seconds": 23,
+            "timestamp": "20260924102440"
+        },
         {
             "meter_id": "spm32-rs232-63",
             "schema": "spm32.3phase.v1",
