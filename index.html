@@ -216,7 +216,7 @@
                     </select>
                 </div>
                 <div class="flex items-center gap-1" id="pagination-controls">
-                    <!-- Tombol Paginasi Generated Dynamic -->
+                    <!-- Tombol Paginasi Dynamic -->
                 </div>
             </div>
         </div>
@@ -228,12 +228,10 @@
         let currentFilteredData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
         
-        // Paginasi & Refresh state
         let currentPage = 1;
         let pageSize = 25;
         let isPaused = false;
         let countdown = 10;
-        let timerInterval;
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
@@ -302,7 +300,6 @@
                 return;
             }
 
-            // Update kartu ringkasan
             const latest = currentFilteredData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
@@ -387,11 +384,9 @@
             const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40 disabled:hover:bg-white";
             const activeClass = "px-2.5 py-1 border border-rose-500 bg-rose-50 text-rose-600 font-bold rounded";
 
-            // Tombol First & Prev
             container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)" class="${btnClass}">First</button>`;
             container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})" class="${btnClass}">Prev</button>`;
 
-            // Nomor Halaman
             let startP = Math.max(1, currentPage - 2);
             let endP = Math.min(totalPages, startP + 4);
             if (endP - startP < 4) startP = Math.max(1, endP - 4);
@@ -404,7 +399,6 @@
                 }
             }
 
-            // Tombol Next & Last
             container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})" class="${btnClass}">Next</button>`;
             container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${totalPages})" class="${btnClass}">Last</button>`;
         }
@@ -497,7 +491,9 @@
 
             if (dataList.length === 0) return;
 
-            const chartData = [...dataList].reverse();
+            // Batasi 50 titik data terbaru agar animasi bergeser terlihat jelas
+            const slicedData = dataList.slice(0, 50);
+            const chartData = [...slicedData].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
             chartV = new Chart(document.getElementById('chartVoltage'), {
