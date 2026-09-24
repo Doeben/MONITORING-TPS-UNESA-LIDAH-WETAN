@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Monitoring Energi | TPS Lidah Wetan</title>
+    <title>Sistem Monitoring Energi Real-Time | TPS Lidah Wetan</title>
     <!-- Tailwind CSS & Chart.js -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -31,10 +31,10 @@
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E Dashboard</span>
+                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E Real-Time Monitoring</span>
                     </div>
                     <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Depo Sampah Lidah Wetan</h1>
                     <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono" id="display-device-id">860987054243453</span> • Pusat Energi & Lingkungan</p>
@@ -47,7 +47,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span id="sync-badge">Status: Menyambungkan...</span>
+                    <span id="sync-badge">Status: Live Feed</span>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
                 <h3 class="text-3xl font-bold text-gray-800 mt-1" id="card-current">0 <span class="text-base text-gray-400">A</span></h3>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
-                <p class="text-sm text-gray-500 font-medium">Rerata THD (V & I)</p>
+                <p class="text-sm text-gray-500 font-medium">Rerata THD (V / I)</p>
                 <div class="flex items-end gap-2 mt-1">
                     <h3 class="text-3xl font-bold text-purple-600" id="avg-thd-v">0%</h3>
                     <span class="text-xl text-gray-300 mb-1">/</span>
@@ -98,7 +98,7 @@
             </div>
         </div>
 
-        <!-- GRAFIK -->
+        <!-- GRAFIK REAL-TIME -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
@@ -126,19 +126,19 @@
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    THD Tegangan (THD Voltage) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                    THD Tegangan <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartTHDV"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    THD Arus (THD Current) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                    THD Arus <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartTHDI"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    Frekuensi Listrik (Frequency) <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Hertz (Hz)</span>
+                    Frekuensi Listrik <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Hertz (Hz)</span>
                 </h3>
                 <div class="h-60"><canvas id="chartFrequency"></canvas></div>
             </div>
@@ -148,13 +148,13 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
                 <div>
-                    <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Riwayat data telemetri power meter sesuai filter perangkat & tanggal</p>
+                    <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran Real-Time</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Riwayat streaming telemetry dari MQTT Broker via fetch.py</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 text-xs">
                     <span id="auto-refresh-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded font-medium flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Auto Refresh: <span id="timer-count">10s</span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        Realtime Stream: <span id="timer-count">1s</span>
                     </span>
                     <button id="btn-pause" onclick="togglePause()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
                         ⏸ Pause
@@ -168,7 +168,7 @@
                 </div>
             </div>
 
-            <!-- Tabel Data -->
+            <!-- TABEL DATA -->
             <div class="overflow-x-auto">
                 <table class="w-full text-center text-xs whitespace-nowrap border-collapse">
                     <thead class="bg-gray-50 text-gray-700 border-b border-gray-200 font-semibold">
@@ -198,7 +198,7 @@
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700 bg-white">
-                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Sedang memuat data...</td></tr>
+                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Sedang memuat stream real-time...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -223,12 +223,12 @@
     </main>
 
     <script>
-        // CONFIGURASI API & DEVICE
+        // CONFIGURASI REALTIME FETCH
         const CONFIG = {
-            endpoint: './data.json', // Ganti ke URL API Server jika ada (contoh: 'https://api.domain.com/telemetry')
+            endpoint: './data.json',
             deviceId: '860987054243453',
-            sendQueryParams: false,  // Ubah ke true jika backend menerima query string ?device_id=...&start_date=...
-            timeoutMs: 10000         // Timeout fetch 10 detik
+            realtimeIntervalSec: 1, // Auto Polling 1 Detik untuk Realtime Feed
+            timeoutMs: 5000
         };
 
         let allTelemetryData = [];
@@ -238,76 +238,43 @@
         let currentPage = 1;
         let pageSize = 25;
         let isPaused = false;
-        let countdown = 10;
+        let countdown = CONFIG.realtimeIntervalSec;
 
-        // FUNGSI FETCH UTAMA LENGKAP
-        async function fetchTelemetryData(startDate, endDate) {
+        // FUNGSI FETCH REALTIME DENGAN ANTI-CACHING KETAT
+        async function fetchTelemetryData() {
             setLoadingUI(true);
-
-            // Controller untuk Timeout jika server lambat
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeoutMs);
 
             try {
-                let url = `${CONFIG.endpoint}?_t=${Date.now()}`; // Anti-caching param
-
-                // Jika backend butuh URL query params
-                if (CONFIG.sendQueryParams && startDate && endDate) {
-                    const queryParams = new URLSearchParams({
-                        device_id: CONFIG.deviceId,
-                        start_date: startDate,
-                        end_date: endDate
-                    });
-                    url = `${CONFIG.endpoint}?${queryParams.toString()}`;
-                }
-
-                const response = await fetch(url, {
+                // Query parameter _t=Timestamp membuat browser tidak menyimpan cache file data.json
+                const response = await fetch(`${CONFIG.endpoint}?_t=${Date.now()}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                        // 'Authorization': 'Bearer <TOKEN_KAMU>' // Aktifkan jika butuh auth token
-                    },
+                    headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 });
 
                 clearTimeout(timeoutId);
 
-                // Handling HTTP Error status (404, 500, dll)
                 if (!response.ok) {
-                    throw new Error(`HTTP Error Status: ${response.status} (${response.statusText || 'Gagal terhubung'})`);
+                    throw new Error(`HTTP Error Status: ${response.status}`);
                 }
 
                 const rawResult = await response.json();
+                let dataArray = Array.isArray(rawResult) ? rawResult : (rawResult.data || []);
 
-                // Normalisasi hasil JSON (Bisa array langsung atau objek { data: [...] })
-                let dataArray = [];
-                if (Array.isArray(rawResult)) {
-                    dataArray = rawResult;
-                } else if (rawResult && Array.isArray(rawResult.data)) {
-                    dataArray = rawResult.data;
-                } else {
-                    throw new Error("Format JSON tidak valid (harus berupa Array atau Objek dengan key 'data').");
-                }
-
-                setLoadingUI(false, "Terhubung");
+                setLoadingUI(false, "Live Stream Active");
                 return dataArray;
 
             } catch (err) {
                 clearTimeout(timeoutId);
-                setLoadingUI(false, "Terputus");
-                
-                let errorMsg = err.message;
-                if (err.name === 'AbortError') {
-                    errorMsg = "Koneksi RTO (Request Timeout). Server lambat merespons.";
-                }
-
-                console.error("Fetch Error Detail:", err);
-                return { error: errorMsg };
+                setLoadingUI(false, "Streaming Pause/Error");
+                console.error("Fetch Realtime Error:", err);
+                return { error: err.message };
             }
         }
 
-        // FUNGSI UTAMA UNTUK INISIALISASI / REFRESH DATA
+        // FUNGSI UTAMA UNTUK UPDATE UI SECARA PERIODIK
         async function initData() {
             const startDateInput = document.getElementById('start-date');
             const endDateInput = document.getElementById('end-date');
@@ -319,18 +286,18 @@
                 endDateInput.value = today;
             }
 
-            const dataResult = await fetchTelemetryData(startDateInput.value, endDateInput.value);
+            const dataResult = await fetchTelemetryData();
 
-            // Jika mengembalikan Error
             if (dataResult && dataResult.error) {
-                document.getElementById('telemetry-table-body').innerHTML = `
-                    <tr>
-                        <td colspan="16" class="py-8 text-center text-red-500 font-semibold">
-                            ⚠️ ${dataResult.error}
-                        </td>
-                    </tr>`;
-                resetCards();
-                renderCharts([]);
+                // Tampilkan pesan jika file data.json belum dibuat oleh python/fetch error
+                if (allTelemetryData.length === 0) {
+                    document.getElementById('telemetry-table-body').innerHTML = `
+                        <tr>
+                            <td colspan="16" class="py-8 text-center text-amber-600 font-medium">
+                                ⏳ Menunggu stream data dari <b>fetch.py</b>... (Pastikan script python berjalan)
+                            </td>
+                        </tr>`;
+                }
                 return;
             }
 
@@ -338,11 +305,7 @@
 
             if (allTelemetryData.length === 0) {
                 document.getElementById('telemetry-table-body').innerHTML = `
-                    <tr>
-                        <td colspan="16" class="py-8 text-center text-gray-400">
-                            Tidak ada rekaman data ditemukan di sumber.
-                        </td>
-                    </tr>`;
+                    <tr><td colspan="16" class="py-8 text-center text-gray-400">Belum ada data masuk dari MQTT Broker.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 return;
@@ -351,7 +314,7 @@
             filterAndRenderData();
 
             const nowTime = new Date();
-            document.getElementById('sync-badge').innerText = `Diperbarui: ${nowTime.toTimeString().split(' ')[0]}`;
+            document.getElementById('sync-badge').innerText = `Updated: ${nowTime.toTimeString().split(' ')[0]}`;
         }
 
         function filterAndRenderData() {
@@ -370,13 +333,14 @@
             document.getElementById('total-records').innerText = currentFilteredData.length;
 
             if (currentFilteredData.length === 0) {
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data pada tanggal filter ini.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data untuk tanggal terpilih.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 renderPaginationControls(0);
                 return;
             }
 
+            // Kartu Rerata/Nilai Terkini
             const latest = currentFilteredData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
@@ -427,7 +391,7 @@
                 const pTotalCalculated = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
 
                 const row = document.createElement('tr');
-                row.className = "hover:bg-gray-50 border-b border-gray-100 transition-colors";
+                row.className = index === 0 ? "bg-emerald-50/60 font-medium border-b border-gray-100" : "hover:bg-gray-50 border-b border-gray-100 transition-colors";
                 row.innerHTML = `
                     <td class="py-2.5 px-3 border-r border-gray-200 text-gray-500">${startIndex + index + 1}</td>
                     <td class="py-2.5 px-4 border-r border-gray-200 font-mono text-left">${formatWaktuTabel(item.timestamp)}</td>
@@ -458,7 +422,7 @@
 
             if (totalPages <= 1) return;
 
-            const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40 disabled:hover:bg-white";
+            const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40";
             const activeClass = "px-2.5 py-1 border border-teal-600 bg-teal-50 text-teal-700 font-bold rounded";
 
             container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)" class="${btnClass}">First</button>`;
@@ -466,7 +430,6 @@
 
             let startP = Math.max(1, currentPage - 2);
             let endP = Math.min(totalPages, startP + 4);
-            if (endP - startP < 4) startP = Math.max(1, endP - 4);
 
             for (let p = startP; p <= endP; p++) {
                 if (p === currentPage) {
@@ -477,7 +440,6 @@
             }
 
             container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})" class="${btnClass}">Next</button>`;
-            container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${totalPages})" class="${btnClass}">Last</button>`;
         }
 
         function goToPage(page) {
@@ -497,16 +459,15 @@
 
             if (isLoading) {
                 spinner.classList.remove('hidden');
-                syncBadge.innerText = "Status: Mengambil Data...";
             } else {
                 spinner.classList.add('hidden');
-                syncBadge.innerText = `Status: ${textStatus || 'Terhubung'}`;
+                syncBadge.innerText = textStatus || 'Live Stream Active';
             }
         }
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
-            return `${ts.substring(8,10)}:${ts.substring(10,12)} (${ts.substring(6,8)}/${ts.substring(4,6)})`;
+            return `${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
         function formatWaktuTabel(ts) {
@@ -518,7 +479,7 @@
             isPaused = !isPaused;
             const btn = document.getElementById('btn-pause');
             if (isPaused) {
-                btn.innerHTML = `▶ Resume`;
+                btn.innerHTML = `▶ Resume Realtime`;
                 btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-300');
             } else {
                 btn.innerHTML = `⏸ Pause`;
@@ -527,13 +488,8 @@
         }
 
         function exportCSV() {
-            if (currentFilteredData.length === 0) {
-                alert("Tidak ada data untuk diekspor!");
-                return;
-            }
-
+            if (currentFilteredData.length === 0) return alert("Data kosong!");
             let csv = 'No,Timestamp,Tegangan_A,Tegangan_B,Tegangan_C,Arus_A,Arus_B,Arus_C,Daya_A,Daya_B,Daya_Total,PF_Total,Frekuensi,THD_V_A,THD_V_B,THD_V_C\n';
-
             currentFilteredData.forEach((item, index) => {
                 const m = item.measurement || {};
                 const v = m.voltage_v || {};
@@ -542,14 +498,12 @@
                 const pf = m.power_factor || {};
                 const tv = m.thd_voltage_pct || m.thd_v || {};
                 const pTotal = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
-
                 csv += `${index + 1},"${formatWaktuTabel(item.timestamp)}",${v.a||0},${v.b||0},${v.c||0},${i.a||0},${i.b||0},${i.c||0},${p.a||0},${p.b||0},${pTotal},${pf.total||0},${m.frequency_hz||0},${tv.a||0},${tv.b||0},${tv.c||0}\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `Telemetri_PowerMeter_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `Realtime_Telemetri_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -566,27 +520,13 @@
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            elements: {
-                line: { tension: 0.3 }, 
-                point: { radius: 2, hitRadius: 10, hoverRadius: 5 }
-            },
+            animation: false, // Matikan animasi berat agar update 1 detik lancar mulus
+            elements: { line: { tension: 0.2 }, point: { radius: 1.5 } },
             interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Poppins' } } }
-            },
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Poppins', size: 10 } } } },
             scales: {
-                x: { 
-                    grid: { display: false },
-                    ticks: {
-                        font: { family: 'Poppins', size: 10 },
-                        maxRotation: 45,
-                        minRotation: 45,
-                        autoSkip: true,
-                        maxTicksLimit: 12,
-                        includeBounds: true
-                    }
-                },
-                y: { grid: { borderDash: [4, 4], color: '#e5e7eb' } }
+                x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 9 }, maxTicksLimit: 10 } },
+                y: { grid: { borderDash: [3, 3], color: '#f1f5f9' } }
             }
         };
 
@@ -601,7 +541,7 @@
 
             if (dataList.length === 0) return;
 
-            const slicedData = dataList.slice(0, 30);
+            const slicedData = dataList.slice(0, 20); // Tampilkan 20 data terbaru di grafik
             const chartData = [...slicedData].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
@@ -610,9 +550,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Fasa R', data: chartData.map(d => d.measurement?.voltage_v?.a ?? 0), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true },
-                        { label: 'Fasa S', data: chartData.map(d => d.measurement?.voltage_v?.b ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true },
-                        { label: 'Fasa T', data: chartData.map(d => d.measurement?.voltage_v?.c ?? 0), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true }
+                        { label: 'Fasa R', data: chartData.map(d => d.measurement?.voltage_v?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Fasa S', data: chartData.map(d => d.measurement?.voltage_v?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'Fasa T', data: chartData.map(d => d.measurement?.voltage_v?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
                     ]
                 },
                 options: commonOptions
@@ -649,7 +589,7 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true }
+                        { label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#f59e0b', borderWidth: 2, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.05)' }
                     ]
                 },
                 options: commonOptions
@@ -660,9 +600,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Fasa R', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                        { label: 'Fasa S', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                        { label: 'Fasa T', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                        { label: 'THD V (A)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#a855f7', borderWidth: 1.5 },
+                        { label: 'THD V (B)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#ec4899', borderWidth: 1.5 },
+                        { label: 'THD V (C)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#6366f1', borderWidth: 1.5 }
                     ]
                 },
                 options: commonOptions
@@ -673,9 +613,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Fasa R', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                        { label: 'Fasa S', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                        { label: 'Fasa T', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                        { label: 'THD I (A)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#f97316', borderWidth: 1.5 },
+                        { label: 'THD I (B)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#eab308', borderWidth: 1.5 },
+                        { label: 'THD I (C)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#84cc16', borderWidth: 1.5 }
                     ]
                 },
                 options: commonOptions
@@ -686,26 +626,26 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.1)', borderWidth: 2, fill: true }
+                        { label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#0ea5e9', borderWidth: 2, fill: true, backgroundColor: 'rgba(14, 165, 233, 0.05)' }
                     ]
                 },
                 options: commonOptions
             });
         }
 
-        // TIMER AUTO-REFRESH 10 DETIK
+        // TIMER AUTO-REFRESH REALTIME 1 DETIK
         setInterval(() => {
             if (isPaused) return;
             countdown--;
             if (countdown <= 0) {
                 initData();
-                countdown = 10;
+                countdown = CONFIG.realtimeIntervalSec;
             }
             const timerCount = document.getElementById('timer-count');
             if (timerCount) timerCount.innerText = countdown + 's';
         }, 1000);
 
-        // EKSEKUSI PERTAMA KALI
+        // INISIALISASI
         window.onload = () => {
             document.getElementById('display-device-id').innerText = CONFIG.deviceId;
             initData();
