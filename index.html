@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Monitoring Energi Real-Time | TPS Lidah Wetan</title>
-    <!-- Tailwind CSS & Chart.js -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Paho MQTT Browser Library (WebSockets) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <!-- Font Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,10 +34,10 @@
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                          <span id="ping-indicator" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span id="dot-indicator" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E Real-Time Monitoring</span>
+                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E MQTT Direct</span>
                     </div>
                     <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Depo Sampah Lidah Wetan</h1>
                     <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono" id="display-device-id">860987054243453</span> • Pusat Energi & Lingkungan</p>
@@ -43,11 +46,7 @@
 
             <div class="text-right flex flex-col items-end">
                 <div class="bg-teal-800 border border-teal-700 px-4 py-2 rounded-lg text-sm font-medium shadow-inner flex items-center gap-2">
-                    <svg class="w-4 h-4 text-teal-300 animate-spin hidden" id="loading-spinner" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span id="sync-badge">Status: Live Feed</span>
+                    <span id="sync-badge">Status: Connecting to Broker...</span>
                 </div>
             </div>
         </div>
@@ -66,11 +65,11 @@
                     <input type="date" id="start-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
                     <span class="text-gray-400">s/d</span>
                     <input type="date" id="end-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
-                    <button onclick="initData()" class="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Terapkan</button>
+                    <button onclick="filterAndRenderData()" class="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Terapkan Filter</button>
                 </div>
             </div>
             <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
-                Total Data: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
+                Total Data Diterima: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
             </div>
         </div>
 
@@ -149,18 +148,14 @@
             <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
                 <div>
                     <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran Real-Time</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Riwayat streaming telemetry dari MQTT Broker via fetch.py</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Stream langsung dari Broker MQTT via WebSockets Client Browser</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 text-xs">
-                    <span id="auto-refresh-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded font-medium flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        Realtime Stream: <span id="timer-count">1s</span>
-                    </span>
                     <button id="btn-pause" onclick="togglePause()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
-                        ⏸ Pause
+                        ⏸ Pause Feed
                     </button>
-                    <button onclick="initData()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
-                        🔄 Refresh
+                    <button onclick="clearData()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-red-600 hover:bg-red-50 flex items-center gap-1 transition-colors">
+                        🗑️ Reset Buffer
                     </button>
                     <button onclick="exportCSV()" class="px-3 py-1.5 bg-white border border-blue-600 text-blue-600 rounded font-medium hover:bg-blue-50 flex items-center gap-1 transition-colors">
                         📥 Export CSV
@@ -198,7 +193,7 @@
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700 bg-white">
-                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Sedang memuat stream real-time...</td></tr>
+                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Menunggu data incoming via MQTT...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -223,14 +218,18 @@
     </main>
 
     <script>
-        // CONFIGURASI REALTIME FETCH
-        const CONFIG = {
-            endpoint: './data.json',
-            deviceId: '860987054243453',
-            realtimeIntervalSec: 1, // Auto Polling 1 Detik untuk Realtime Feed
-            timeoutMs: 5000
+        // =========================================================
+        // KONFIGURASI MQTT BROKER (Ubah sesuai Broker/Mas Fikri/PDF)
+        // =========================================================
+        const MQTT_CONFIG = {
+            host: "broker.hivemq.com", // Host/IP Broker (contoh: broker.hivemq.com)
+            port: 8000,               // Port WebSockets (8000 / 8083 / 8084 untuk WSS)
+            topic: "smarte/tps_lidah_wetan/telemetry", // Topic MQTT
+            useSSL: false,             // Set true jika port SSL HTTPS (misal 8084)
+            deviceId: "860987054243453"
         };
 
+        // VARIABEL GLOBAL
         let allTelemetryData = [];
         let currentFilteredData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
@@ -238,109 +237,120 @@
         let currentPage = 1;
         let pageSize = 25;
         let isPaused = false;
-        let countdown = CONFIG.realtimeIntervalSec;
+        let mqttClient = null;
 
-        // FUNGSI FETCH REALTIME DENGAN ANTI-CACHING KETAT
-        async function fetchTelemetryData() {
-            setLoadingUI(true);
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeoutMs);
+        // =========================================================
+        // INISIALISASI KONEKSI PAHO MQTT VIA WEBSOCKETS
+        // =========================================================
+        function initMQTT() {
+            const clientId = "SmartE_Web_" + Math.random().toString(16).substr(2, 8);
+            mqttClient = new Paho.MQTT.Client(MQTT_CONFIG.host, Number(MQTT_CONFIG.port), clientId);
+
+            mqttClient.onConnectionLost = onConnectionLost;
+            mqttClient.onMessageArrived = onMessageArrived;
+
+            const options = {
+                timeout: 5,
+                useSSL: MQTT_CONFIG.useSSL,
+                cleanSession: true,
+                onSuccess: onConnectSuccess,
+                onFailure: onConnectFailure
+            };
+
+            updateStatusBadge("Connecting to Broker...", "amber");
+            mqttClient.connect(options);
+        }
+
+        function onConnectSuccess() {
+            updateStatusBadge(`Connected (${MQTT_CONFIG.host})`, "emerald");
+            mqttClient.subscribe(MQTT_CONFIG.topic);
+            console.log("✅ Terhubung ke MQTT Broker & Subscribed to:", MQTT_CONFIG.topic);
+        }
+
+        function onConnectFailure(err) {
+            updateStatusBadge("Broker Disconnected", "red");
+            console.error("❌ Gagal Terhubung ke Broker MQTT:", err);
+            // Reconnect otomatis tiap 5 detik jika gagal
+            setTimeout(initMQTT, 5000);
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                updateStatusBadge("Connection Lost. Reconnecting...", "red");
+                console.warn("⚠️ Koneksi MQTT Terputus:", responseObject.errorMessage);
+                setTimeout(initMQTT, 3000);
+            }
+        }
+
+        // =========================================================
+        // PROSES MESSAGES MASUK SECARA REAL-TIME
+        // =========================================================
+        function onMessageArrived(message) {
+            if (isPaused) return;
 
             try {
-                // Query parameter _t=Timestamp membuat browser tidak menyimpan cache file data.json
-                const response = await fetch(`${CONFIG.endpoint}?_t=${Date.now()}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error Status: ${response.status}`);
+                const payload = JSON.parse(message.payloadString);
+                
+                // Tambahkan timestamp lokal jika sensor tidak mengirimkan timestamp
+                if (!payload.timestamp) {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const mins = String(now.getMinutes()).padStart(2, '0');
+                    const secs = String(now.getSeconds()).padStart(2, '0');
+                    payload.timestamp = `${year}${month}${day}${hours}${mins}${secs}`;
                 }
 
-                const rawResult = await response.json();
-                let dataArray = Array.isArray(rawResult) ? rawResult : (rawResult.data || []);
+                // Sisipkan data baru ke paling depan array (Data Terbaru)
+                allTelemetryData.unshift(payload);
 
-                setLoadingUI(false, "Live Stream Active");
-                return dataArray;
+                // Batasi array memori browser max 200 data agar tidak berat
+                if (allTelemetryData.length > 200) {
+                    allTelemetryData.pop();
+                }
 
-            } catch (err) {
-                clearTimeout(timeoutId);
-                setLoadingUI(false, "Streaming Pause/Error");
-                console.error("Fetch Realtime Error:", err);
-                return { error: err.message };
+                // Perbarui Tampilan UI secara Instant
+                filterAndRenderData();
+
+                const nowTime = new Date();
+                document.getElementById('sync-badge').innerText = `Live Stream: ${nowTime.toTimeString().split(' ')[0]}`;
+
+            } catch (e) {
+                console.error("Payload masuk bukan JSON valid:", e);
             }
         }
 
-        // FUNGSI UTAMA UNTUK UPDATE UI SECARA PERIODIK
-        async function initData() {
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-
-            if (!startDateInput.value || !endDateInput.value) {
-                const now = new Date();
-                const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-                startDateInput.value = today;
-                endDateInput.value = today;
-            }
-
-            const dataResult = await fetchTelemetryData();
-
-            if (dataResult && dataResult.error) {
-                // Tampilkan pesan jika file data.json belum dibuat oleh python/fetch error
-                if (allTelemetryData.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `
-                        <tr>
-                            <td colspan="16" class="py-8 text-center text-amber-600 font-medium">
-                                ⏳ Menunggu stream data dari <b>fetch.py</b>... (Pastikan script python berjalan)
-                            </td>
-                        </tr>`;
-                }
-                return;
-            }
-
-            allTelemetryData = dataResult || [];
-
-            if (allTelemetryData.length === 0) {
-                document.getElementById('telemetry-table-body').innerHTML = `
-                    <tr><td colspan="16" class="py-8 text-center text-gray-400">Belum ada data masuk dari MQTT Broker.</td></tr>`;
-                resetCards();
-                renderCharts([]);
-                return;
-            }
-
-            filterAndRenderData();
-
-            const nowTime = new Date();
-            document.getElementById('sync-badge').innerText = `Updated: ${nowTime.toTimeString().split(' ')[0]}`;
-        }
-
+        // =========================================================
+        // FILTER & RENDER DATA KE TABEL & GRAFIK
+        // =========================================================
         function filterAndRenderData() {
             const startVal = document.getElementById('start-date').value;
             const endVal = document.getElementById('end-date').value;
 
-            if (!startVal || !endVal) return;
+            if (!startVal || !endVal) {
+                currentFilteredData = [...allTelemetryData];
+            } else {
+                const startCompact = startVal.replace(/-/g, '') + '000000';
+                const endCompact = endVal.replace(/-/g, '') + '235959';
 
-            const startCompact = startVal.replace(/-/g, '') + '000000';
-            const endCompact = endVal.replace(/-/g, '') + '235959';
-
-            currentFilteredData = allTelemetryData.filter(item => {
-                return item.timestamp >= startCompact && item.timestamp <= endCompact;
-            });
+                currentFilteredData = allTelemetryData.filter(item => {
+                    return item.timestamp >= startCompact && item.timestamp <= endCompact;
+                });
+            }
 
             document.getElementById('total-records').innerText = currentFilteredData.length;
 
             if (currentFilteredData.length === 0) {
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data untuk tanggal terpilih.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-gray-400">Belum ada data telemetry masuk.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 renderPaginationControls(0);
                 return;
             }
 
-            // Kartu Rerata/Nilai Terkini
+            // Metrik Kartu
             const latest = currentFilteredData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
@@ -391,7 +401,7 @@
                 const pTotalCalculated = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
 
                 const row = document.createElement('tr');
-                row.className = index === 0 ? "bg-emerald-50/60 font-medium border-b border-gray-100" : "hover:bg-gray-50 border-b border-gray-100 transition-colors";
+                row.className = index === 0 ? "bg-emerald-50/70 font-medium border-b border-gray-100" : "hover:bg-gray-50 border-b border-gray-100 transition-colors";
                 row.innerHTML = `
                     <td class="py-2.5 px-3 border-r border-gray-200 text-gray-500">${startIndex + index + 1}</td>
                     <td class="py-2.5 px-4 border-r border-gray-200 font-mono text-left">${formatWaktuTabel(item.timestamp)}</td>
@@ -453,15 +463,22 @@
             renderTablePage();
         }
 
-        function setLoadingUI(isLoading, textStatus) {
-            const spinner = document.getElementById('loading-spinner');
+        function updateStatusBadge(text, color) {
             const syncBadge = document.getElementById('sync-badge');
+            const pingInd = document.getElementById('ping-indicator');
+            const dotInd = document.getElementById('dot-indicator');
 
-            if (isLoading) {
-                spinner.classList.remove('hidden');
+            syncBadge.innerText = `Status: ${text}`;
+            
+            if (color === 'emerald') {
+                pingInd.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+                dotInd.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
+            } else if (color === 'amber') {
+                pingInd.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+                dotInd.className = "relative inline-flex rounded-full h-3 w-3 bg-amber-500";
             } else {
-                spinner.classList.add('hidden');
-                syncBadge.innerText = textStatus || 'Live Stream Active';
+                pingInd.className = "hidden";
+                dotInd.className = "relative inline-flex rounded-full h-3 w-3 bg-red-500";
             }
         }
 
@@ -479,16 +496,21 @@
             isPaused = !isPaused;
             const btn = document.getElementById('btn-pause');
             if (isPaused) {
-                btn.innerHTML = `▶ Resume Realtime`;
+                btn.innerHTML = `▶ Resume Feed`;
                 btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-300');
             } else {
-                btn.innerHTML = `⏸ Pause`;
+                btn.innerHTML = `⏸ Pause Feed`;
                 btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-300');
             }
         }
 
+        function clearData() {
+            allTelemetryData = [];
+            filterAndRenderData();
+        }
+
         function exportCSV() {
-            if (currentFilteredData.length === 0) return alert("Data kosong!");
+            if (currentFilteredData.length === 0) return alert("Buffer data kosong!");
             let csv = 'No,Timestamp,Tegangan_A,Tegangan_B,Tegangan_C,Arus_A,Arus_B,Arus_C,Daya_A,Daya_B,Daya_Total,PF_Total,Frekuensi,THD_V_A,THD_V_B,THD_V_C\n';
             currentFilteredData.forEach((item, index) => {
                 const m = item.measurement || {};
@@ -503,7 +525,7 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `Realtime_Telemetri_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `Realtime_MQTT_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -520,7 +542,7 @@
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false, // Matikan animasi berat agar update 1 detik lancar mulus
+            animation: false,
             elements: { line: { tension: 0.2 }, point: { radius: 1.5 } },
             interaction: { mode: 'index', intersect: false },
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Poppins', size: 10 } } } },
@@ -541,7 +563,7 @@
 
             if (dataList.length === 0) return;
 
-            const slicedData = dataList.slice(0, 20); // Tampilkan 20 data terbaru di grafik
+            const slicedData = dataList.slice(0, 20); 
             const chartData = [...slicedData].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
@@ -633,22 +655,15 @@
             });
         }
 
-        // TIMER AUTO-REFRESH REALTIME 1 DETIK
-        setInterval(() => {
-            if (isPaused) return;
-            countdown--;
-            if (countdown <= 0) {
-                initData();
-                countdown = CONFIG.realtimeIntervalSec;
-            }
-            const timerCount = document.getElementById('timer-count');
-            if (timerCount) timerCount.innerText = countdown + 's';
-        }, 1000);
-
-        // INISIALISASI
+        // INISIALISASI SAAT HALAMAN DIBUKA
         window.onload = () => {
-            document.getElementById('display-device-id').innerText = CONFIG.deviceId;
-            initData();
+            const now = new Date();
+            const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('start-date').value = today;
+            document.getElementById('end-date').value = today;
+            document.getElementById('display-device-id').innerText = MQTT_CONFIG.deviceId;
+
+            initMQTT();
         };
     </script>
 </body>
