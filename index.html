@@ -26,7 +26,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-5">
                 <div class="bg-white p-2 rounded-xl shadow-md">
-                    <img src="logo-unesa.png" alt="Logo" class="h-16 w-auto object-contain">
+                    <img src="logo-unesa.png" alt="Logo" class="h-16 w-auto object-contain" onerror="this.src='https://via.placeholder.com/60?text=UNESA'">
                 </div>
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -37,14 +37,17 @@
                         <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E Dashboard</span>
                     </div>
                     <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Depo Sampah Lidah Wetan</h1>
-                    <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono">860987054243453</span> • Pusat Energi & Lingkungan</p>
+                    <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono" id="display-device-id">860987054243453</span> • Pusat Energi & Lingkungan</p>
                 </div>
             </div>
 
             <div class="text-right flex flex-col items-end">
                 <div class="bg-teal-800 border border-teal-700 px-4 py-2 rounded-lg text-sm font-medium shadow-inner flex items-center gap-2">
-                    <svg class="w-4 h-4 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span id="sync-badge">Status: Syncing...</span>
+                    <svg class="w-4 h-4 text-teal-300 animate-spin hidden" id="loading-spinner" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="sync-badge">Status: Menyambungkan...</span>
                 </div>
             </div>
         </div>
@@ -63,6 +66,7 @@
                     <input type="date" id="start-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
                     <span class="text-gray-400">s/d</span>
                     <input type="date" id="end-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
+                    <button onclick="initData()" class="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Terapkan</button>
                 </div>
             </div>
             <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
@@ -142,7 +146,6 @@
 
         <!-- TABEL DATA PENGUKURAN -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <!-- Header Tabel & Tombol Aksi -->
             <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
                 <div>
                     <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran</h2>
@@ -180,19 +183,15 @@
                             <th colspan="3" class="py-1.5 px-3 border-gray-200 border-b">THD Tegangan (%)</th>
                         </tr>
                         <tr class="bg-gray-50 text-gray-600 border-b border-gray-200">
-                            <!-- Tegangan Sub-headers -->
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase C</th>
-                            <!-- Arus Sub-headers -->
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase C</th>
-                            <!-- Daya Sub-headers -->
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase A</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">Phase B</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-bold text-gray-700">Total (W)</th>
-                            <!-- THD Sub-headers -->
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">THD A</th>
                             <th class="py-1.5 px-3 border-r border-gray-200 font-normal text-gray-500">THD B</th>
                             <th class="py-1.5 px-3 font-normal text-gray-500">THD C</th>
@@ -216,7 +215,7 @@
                     </select>
                 </div>
                 <div class="flex items-center gap-1" id="pagination-controls">
-                    <!-- Tombol Paginasi Dynamic -->
+                    <!-- Tombol Paginasi -->
                 </div>
             </div>
         </div>
@@ -224,6 +223,14 @@
     </main>
 
     <script>
+        // CONFIGURASI API & DEVICE
+        const CONFIG = {
+            endpoint: './data.json', // Ganti ke URL API Server jika ada (contoh: 'https://api.domain.com/telemetry')
+            deviceId: '860987054243453',
+            sendQueryParams: false,  // Ubah ke true jika backend menerima query string ?device_id=...&start_date=...
+            timeoutMs: 10000         // Timeout fetch 10 detik
+        };
+
         let allTelemetryData = [];
         let currentFilteredData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
@@ -233,48 +240,118 @@
         let isPaused = false;
         let countdown = 10;
 
-        function formatLabelChart(ts) {
-            if (!ts || ts.length < 14) return ts;
-            return `${ts.substring(8,10)}:${ts.substring(10,12)} (${ts.substring(6,8)}/${ts.substring(4,6)})`;
-        }
+        // FUNGSI FETCH UTAMA LENGKAP
+        async function fetchTelemetryData(startDate, endDate) {
+            setLoadingUI(true);
 
-        function formatWaktuTabel(ts) {
-            if (!ts || ts.length < 14) return ts;
-            return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
-        }
+            // Controller untuk Timeout jika server lambat
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeoutMs);
 
-        async function initData() {
             try {
-                const response = await fetch('./data.json?t=' + new Date().getTime());
-                if (!response.ok) throw new Error("Gagal mengambil data.json");
-                
-                const result = await response.json();
-                allTelemetryData = result.data || [];
+                let url = `${CONFIG.endpoint}?_t=${Date.now()}`; // Anti-caching param
 
-                if (allTelemetryData.length === 0) {
-                    document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-red-500">Tidak ada rekaman data.</td></tr>`;
-                    return;
+                // Jika backend butuh URL query params
+                if (CONFIG.sendQueryParams && startDate && endDate) {
+                    const queryParams = new URLSearchParams({
+                        device_id: CONFIG.deviceId,
+                        start_date: startDate,
+                        end_date: endDate
+                    });
+                    url = `${CONFIG.endpoint}?${queryParams.toString()}`;
                 }
 
-                const startDateInput = document.getElementById('start-date');
-                const endDateInput = document.getElementById('end-date');
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                        // 'Authorization': 'Bearer <TOKEN_KAMU>' // Aktifkan jika butuh auth token
+                    },
+                    signal: controller.signal
+                });
 
-                if (!startDateInput.value || !endDateInput.value) {
-                    const now = new Date();
-                    const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-                    startDateInput.value = today;
-                    endDateInput.value = today;
+                clearTimeout(timeoutId);
+
+                // Handling HTTP Error status (404, 500, dll)
+                if (!response.ok) {
+                    throw new Error(`HTTP Error Status: ${response.status} (${response.statusText || 'Gagal terhubung'})`);
                 }
 
-                filterAndRenderData();
+                const rawResult = await response.json();
 
-                const nowTime = new Date();
-                document.getElementById('sync-badge').innerText = `Diperbarui: ${nowTime.toTimeString().split(' ')[0]}`;
+                // Normalisasi hasil JSON (Bisa array langsung atau objek { data: [...] })
+                let dataArray = [];
+                if (Array.isArray(rawResult)) {
+                    dataArray = rawResult;
+                } else if (rawResult && Array.isArray(rawResult.data)) {
+                    dataArray = rawResult.data;
+                } else {
+                    throw new Error("Format JSON tidak valid (harus berupa Array atau Objek dengan key 'data').");
+                }
+
+                setLoadingUI(false, "Terhubung");
+                return dataArray;
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-red-500">Gagal terhubung ke data lokal.</td></tr>`;
+                clearTimeout(timeoutId);
+                setLoadingUI(false, "Terputus");
+                
+                let errorMsg = err.message;
+                if (err.name === 'AbortError') {
+                    errorMsg = "Koneksi RTO (Request Timeout). Server lambat merespons.";
+                }
+
+                console.error("Fetch Error Detail:", err);
+                return { error: errorMsg };
             }
+        }
+
+        // FUNGSI UTAMA UNTUK INISIALISASI / REFRESH DATA
+        async function initData() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+
+            if (!startDateInput.value || !endDateInput.value) {
+                const now = new Date();
+                const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                startDateInput.value = today;
+                endDateInput.value = today;
+            }
+
+            const dataResult = await fetchTelemetryData(startDateInput.value, endDateInput.value);
+
+            // Jika mengembalikan Error
+            if (dataResult && dataResult.error) {
+                document.getElementById('telemetry-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="16" class="py-8 text-center text-red-500 font-semibold">
+                            ⚠️ ${dataResult.error}
+                        </td>
+                    </tr>`;
+                resetCards();
+                renderCharts([]);
+                return;
+            }
+
+            allTelemetryData = dataResult || [];
+
+            if (allTelemetryData.length === 0) {
+                document.getElementById('telemetry-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="16" class="py-8 text-center text-gray-400">
+                            Tidak ada rekaman data ditemukan di sumber.
+                        </td>
+                    </tr>`;
+                resetCards();
+                renderCharts([]);
+                return;
+            }
+
+            filterAndRenderData();
+
+            const nowTime = new Date();
+            document.getElementById('sync-badge').innerText = `Diperbarui: ${nowTime.toTimeString().split(' ')[0]}`;
         }
 
         function filterAndRenderData() {
@@ -293,7 +370,7 @@
             document.getElementById('total-records').innerText = currentFilteredData.length;
 
             if (currentFilteredData.length === 0) {
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data di rentang waktu ini.</td></tr>`;
+                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-orange-500">Tidak ada data pada tanggal filter ini.</td></tr>`;
                 resetCards();
                 renderCharts([]);
                 renderPaginationControls(0);
@@ -382,7 +459,7 @@
             if (totalPages <= 1) return;
 
             const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40 disabled:hover:bg-white";
-            const activeClass = "px-2.5 py-1 border border-rose-500 bg-rose-50 text-rose-600 font-bold rounded";
+            const activeClass = "px-2.5 py-1 border border-teal-600 bg-teal-50 text-teal-700 font-bold rounded";
 
             container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)" class="${btnClass}">First</button>`;
             container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})" class="${btnClass}">Prev</button>`;
@@ -412,6 +489,29 @@
             pageSize = parseInt(document.getElementById('page-size').value);
             currentPage = 1;
             renderTablePage();
+        }
+
+        function setLoadingUI(isLoading, textStatus) {
+            const spinner = document.getElementById('loading-spinner');
+            const syncBadge = document.getElementById('sync-badge');
+
+            if (isLoading) {
+                spinner.classList.remove('hidden');
+                syncBadge.innerText = "Status: Mengambil Data...";
+            } else {
+                spinner.classList.add('hidden');
+                syncBadge.innerText = `Status: ${textStatus || 'Terhubung'}`;
+            }
+        }
+
+        function formatLabelChart(ts) {
+            if (!ts || ts.length < 14) return ts;
+            return `${ts.substring(8,10)}:${ts.substring(10,12)} (${ts.substring(6,8)}/${ts.substring(4,6)})`;
+        }
+
+        function formatWaktuTabel(ts) {
+            if (!ts || ts.length < 14) return ts;
+            return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
         function togglePause() {
@@ -593,6 +693,7 @@
             });
         }
 
+        // TIMER AUTO-REFRESH 10 DETIK
         setInterval(() => {
             if (isPaused) return;
             countdown--;
@@ -604,10 +705,9 @@
             if (timerCount) timerCount.innerText = countdown + 's';
         }, 1000);
 
-        document.getElementById('start-date').addEventListener('change', filterAndRenderData);
-        document.getElementById('end-date').addEventListener('change', filterAndRenderData);
-
+        // EKSEKUSI PERTAMA KALI
         window.onload = () => {
+            document.getElementById('display-device-id').innerText = CONFIG.deviceId;
             initData();
         };
     </script>
