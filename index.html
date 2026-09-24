@@ -18,14 +18,14 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
- <!-- HEADER WITH LOGOS -->
+        <!-- HEADER WITH LOGOS -->
         <header class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
             <!-- Logo & Title Area -->
             <div class="flex items-center gap-4 md:gap-5 w-full md:w-auto">
-                <!-- LOGO UNESA (Diperbesar & shrink-0 agar tidak tercekik) -->
+                <!-- LOGO UNESA -->
                 <img src="logo-unesa.png" alt="Logo UNESA" class="h-20 md:h-24 w-auto object-contain shrink-0">
                 
-                <!-- Garis Pembatas Vertikal (Disesuaikan tingginya) -->
+                <!-- Garis Pembatas Vertikal -->
                 <div class="h-14 md:h-16 w-[1px] bg-slate-200 hidden sm:block"></div>
                 
                 <div>
@@ -50,6 +50,7 @@
                 </div>
             </div>
         </header>
+
         <!-- FILTER RENTANG TANGGAL (START DATE - END DATE) -->
         <div class="bg-blue-900 text-white rounded-2xl p-4 shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -84,9 +85,16 @@
                 <p class="text-xs font-semibold text-slate-400 uppercase">Arus Rerata</p>
                 <p class="text-2xl font-black text-emerald-600 mt-1" id="card-current">0 A</p>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase">Total Daya Aktif</p>
-                <p class="text-2xl font-black text-purple-600 mt-1" id="card-power">0 W</p>
+            <!-- REVISI DOSPEM: KARTU TOTAL DAYA DIUBAH JADI RERATA THD -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rerata THD (V & I)</h3>
+                <div class="flex items-baseline gap-2">
+                    <span id="avg-thd-v" class="text-2xl font-black text-purple-600">0%</span>
+                    <span class="text-sm font-bold text-slate-400">V</span>
+                    <span class="text-xl font-black text-slate-300">|</span>
+                    <span id="avg-thd-i" class="text-2xl font-black text-orange-500">0%</span>
+                    <span class="text-sm font-bold text-slate-400">I</span>
+                </div>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                 <p class="text-xs font-semibold text-slate-400 uppercase">Power Factor / Freq</p>
@@ -94,7 +102,7 @@
             </div>
         </div>
 
-        <!-- CHARTS SECTION (4 GRAFIK SESUAI STYLE SMARTE / MONACOLISA) -->
+        <!-- CHARTS SECTION -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- 1. Tegangan 3-Fasa -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
@@ -118,18 +126,18 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Daya Aktif per Fasa (Active Power)</h3>
-                    <span class="text-[10px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded">Watt (W)</span>
+                    <span class="text-[10px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded">Watt (W)</span>
                 </div>
                 <div class="h-64"><canvas id="chartPowerPhase"></canvas></div>
             </div>
 
-            <!-- 4. Total Daya Aktif & Frekuensi -->
+            <!-- REVISI DOSPEM: 4. GRAFIK THD (Pengganti Total Power) -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">4. Total Daya Aktif & Power Factor</h3>
-                    <span class="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded">Total Power</span>
+                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">4. Grafik THD (Tegangan & Arus)</h3>
+                    <span class="text-[10px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded">Persen (%)</span>
                 </div>
-                <div class="h-64"><canvas id="chartTotalPower"></canvas></div>
+                <div class="h-64"><canvas id="chartTHD"></canvas></div>
             </div>
         </div>
 
@@ -163,7 +171,7 @@
 
     <script>
         let allTelemetryData = [];
-        let chartV, chartI, chartP, chartTP;
+        let chartV, chartI, chartP, chartTHD;
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
@@ -192,19 +200,19 @@
                 const startDateInput = document.getElementById('start-date');
                 const endDateInput = document.getElementById('end-date');
 
-                // Set default tanggal saat pertama kali dimuat
+                // REVISI DOSPEM: Set default tanggal ke HARI INI SAJA saat pertama kali dimuat
                 if (!startDateInput.value || !endDateInput.value) {
-                    const newestTs = allTelemetryData[0].timestamp;
-                    const oldestTs = allTelemetryData[allTelemetryData.length - 1].timestamp;
-
-                    startDateInput.value = `${oldestTs.substring(0,4)}-${oldestTs.substring(4,6)}-${oldestTs.substring(6,8)}`;
-                    endDateInput.value = `${newestTs.substring(0,4)}-${newestTs.substring(4,6)}-${newestTs.substring(6,8)}`;
+                    const now = new Date();
+                    // Menyesuaikan dengan zona waktu lokal (WIB)
+                    const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    startDateInput.value = today;
+                    endDateInput.value = today;
                 }
 
                 filterAndRenderData();
 
-                const now = new Date();
-                document.getElementById('sync-badge').innerText = `Sync: ${now.toTimeString().split(' ')[0]}`;
+                const nowTime = new Date();
+                document.getElementById('sync-badge').innerText = `Sync: ${nowTime.toTimeString().split(' ')[0]}`;
 
             } catch (err) {
                 console.error(err);
@@ -240,8 +248,22 @@
             const latest = filteredData[0].measurement;
             document.getElementById('card-voltage').innerText = `${((latest.voltage_v.a + latest.voltage_v.b + latest.voltage_v.c)/3).toFixed(1)} V`;
             document.getElementById('card-current').innerText = `${((latest.current_a.a + latest.current_a.b + latest.current_a.c)/3).toFixed(2)} A`;
-            document.getElementById('card-power').innerText = `${latest.active_power_w.total} W`;
             document.getElementById('card-pf').innerText = `${latest.power_factor.total} PF / ${latest.frequency_hz}Hz`;
+
+            // Hitung Rerata THD V dan I dari seluruh data yang terfilter
+            let sumThdV = 0, sumThdI = 0, countThd = 0;
+            filteredData.forEach(item => {
+                const tv = item.measurement.thd_v || { a: 0, b: 0, c: 0 };
+                const ti = item.measurement.thd_i || { a: 0, b: 0, c: 0 };
+                sumThdV += (tv.a + tv.b + tv.c) / 3;
+                sumThdI += (ti.a + ti.b + ti.c) / 3;
+                countThd++;
+            });
+            const avgThdV = countThd > 0 ? (sumThdV / countThd).toFixed(2) : 0;
+            const avgThdI = countThd > 0 ? (sumThdI / countThd).toFixed(2) : 0;
+            
+            document.getElementById('avg-thd-v').innerText = `${avgThdV}%`;
+            document.getElementById('avg-thd-i').innerText = `${avgThdI}%`;
 
             filteredData.forEach(item => {
                 const m = item.measurement;
@@ -251,7 +273,7 @@
                     <td class="py-3 px-4 font-mono text-slate-700">${formatWaktuTabel(item.timestamp)}</td>
                     <td class="py-3 px-4 text-center font-medium"><span class="text-blue-600">${m.voltage_v.a}</span> / <span class="text-emerald-600">${m.voltage_v.b}</span> / <span class="text-rose-600">${m.voltage_v.c}</span></td>
                     <td class="py-3 px-4 text-center"><span class="text-blue-600">${m.current_a.a}</span> / <span class="text-emerald-600">${m.current_a.b}</span> / <span class="text-rose-600">${m.current_a.c}</span></td>
-                    <td class="py-3 px-4 text-center font-bold text-purple-700">${m.active_power_w.total} W</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-500">${m.active_power_w.total} W</td>
                     <td class="py-3 px-4 text-center">${m.frequency_hz} Hz</td>
                     <td class="py-3 px-4 text-center">${m.power_factor.total}</td>
                 `;
@@ -264,7 +286,8 @@
         function resetCards() {
             document.getElementById('card-voltage').innerText = `0 V`;
             document.getElementById('card-current').innerText = `0 A`;
-            document.getElementById('card-power').innerText = `0 W`;
+            document.getElementById('avg-thd-v').innerText = `0%`;
+            document.getElementById('avg-thd-i').innerText = `0%`;
             document.getElementById('card-pf').innerText = `0 PF`;
         }
 
@@ -272,7 +295,7 @@
             if (chartV) chartV.destroy();
             if (chartI) chartI.destroy();
             if (chartP) chartP.destroy();
-            if (chartTP) chartTP.destroy();
+            if (chartTHD) chartTHD.destroy(); // Dihancurkan sebelum dirender ulang
 
             if (dataList.length === 0) return;
 
@@ -321,13 +344,36 @@
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // 4. Chart Total Daya Aktif & PF
-            chartTP = new Chart(document.getElementById('chartTotalPower'), {
+            // REVISI DOSPEM: 4. Chart Rerata THD Tegangan & Arus
+            chartTHD = new Chart(document.getElementById('chartTHD'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Total Active Power (W)', data: chartData.map(d => d.measurement.active_power_w.total), borderColor: '#d97706', borderWidth: 1.5, pointRadius: 0 }
+                        { 
+                            label: 'Rerata THD Tegangan (V)', 
+                            data: chartData.map(d => {
+                                const tv = d.measurement.thd_v || { a: 0, b: 0, c: 0 };
+                                return ((tv.a + tv.b + tv.c) / 3) || 0;
+                            }), 
+                            borderColor: '#9333ea', // Ungu
+                            backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                            borderWidth: 1.5, 
+                            pointRadius: 0,
+                            tension: 0.4
+                        },
+                        { 
+                            label: 'Rerata THD Arus (I)', 
+                            data: chartData.map(d => {
+                                const ti = d.measurement.thd_i || { a: 0, b: 0, c: 0 };
+                                return ((ti.a + ti.b + ti.c) / 3) || 0;
+                            }), 
+                            borderColor: '#f97316', // Oranye
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            borderWidth: 1.5, 
+                            pointRadius: 0,
+                            tension: 0.4
+                        }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
