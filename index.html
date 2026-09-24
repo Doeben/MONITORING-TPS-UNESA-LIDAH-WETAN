@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Paho MQTT Browser Library (WebSockets) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <!-- Font Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,16 +35,16 @@
                           <span id="ping-indicator" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span id="dot-indicator" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Smart-E MQTT Direct</span>
+                        <span class="text-xs font-semibold text-teal-200 tracking-widest uppercase">Monacolisa REST API</span>
                     </div>
                     <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Depo Sampah Lidah Wetan</h1>
-                    <p class="text-sm text-teal-300 mt-1">ID: <span class="font-mono" id="display-device-id">860987054243453</span> • Pusat Energi & Lingkungan</p>
+                    <p class="text-sm text-teal-300 mt-1">IMEI: <span class="font-mono" id="display-device-id">860987054243453</span> • Pusat Energi & Lingkungan</p>
                 </div>
             </div>
 
             <div class="text-right flex flex-col items-end">
                 <div class="bg-teal-800 border border-teal-700 px-4 py-2 rounded-lg text-sm font-medium shadow-inner flex items-center gap-2">
-                    <span id="sync-badge">Status: Connecting to Broker...</span>
+                    <span id="sync-badge">Status: Initializing...</span>
                 </div>
             </div>
         </div>
@@ -63,13 +61,11 @@
                 </div>
                 <div class="flex items-center gap-2 text-sm font-medium">
                     <input type="date" id="start-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
-                    <span class="text-gray-400">s/d</span>
-                    <input type="date" id="end-date" class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
-                    <button onclick="filterAndRenderData()" class="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Terapkan Filter</button>
+                    <button onclick="fetchEnergyData()" class="px-4 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg transition-colors font-medium ml-2">Ambil Data</button>
                 </div>
             </div>
             <div class="text-sm font-semibold text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
-                Total Data Diterima: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
+                Total Data Terambil: <span id="total-records" class="text-teal-700 font-bold ml-1">0</span>
             </div>
         </div>
 
@@ -148,14 +144,11 @@
             <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
                 <div>
                     <h2 class="text-base font-bold text-gray-800">Tabel Data Pengukuran Real-Time</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Stream langsung dari Broker MQTT via WebSockets Client Browser</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Data diambil langsung dari REST API Monacolisa via Client Browser</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 text-xs">
-                    <button id="btn-pause" onclick="togglePause()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
-                        ⏸ Pause Feed
-                    </button>
-                    <button onclick="clearData()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-red-600 hover:bg-red-50 flex items-center gap-1 transition-colors">
-                        🗑️ Reset Buffer
+                    <button onclick="fetchEnergyData()" class="px-3 py-1.5 bg-white border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
+                        🔄 Refresh Data
                     </button>
                     <button onclick="exportCSV()" class="px-3 py-1.5 bg-white border border-blue-600 text-blue-600 rounded font-medium hover:bg-blue-50 flex items-center gap-1 transition-colors">
                         📥 Export CSV
@@ -193,7 +186,7 @@
                         </tr>
                     </thead>
                     <tbody id="telemetry-table-body" class="divide-y divide-gray-100 text-gray-700 bg-white">
-                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Menunggu data incoming via MQTT...</td></tr>
+                        <tr><td colspan="16" class="py-8 text-center text-gray-400">Mengambil data dari API Monacolisa...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -201,16 +194,13 @@
             <!-- PAGINASI BAWAH -->
             <div class="p-3 bg-white border-t border-gray-200 flex flex-col sm:flex-row justify-end items-center gap-4 text-xs text-gray-600">
                 <div class="flex items-center gap-2">
-                    <span>Page Size</span>
-                    <select id="page-size" onchange="changePageSize()" class="border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    <span>Limit Data</span>
+                    <select id="limit-size" onchange="fetchEnergyData()" class="border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
                         <option value="10">10</option>
                         <option value="25" selected>25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
-                </div>
-                <div class="flex items-center gap-1" id="pagination-controls">
-                    <!-- Tombol Paginasi -->
                 </div>
             </div>
         </div>
@@ -218,140 +208,70 @@
     </main>
 
     <script>
-        // =========================================================
-        // KONFIGURASI MQTT BROKER (Ubah sesuai Broker/Mas Fikri/PDF)
-        // =========================================================
-        const MQTT_CONFIG = {
-            host: "broker.hivemq.com", // Host/IP Broker (contoh: broker.hivemq.com)
-            port: 8000,               // Port WebSockets (8000 / 8083 / 8084 untuk WSS)
-            topic: "smarte/tps_lidah_wetan/telemetry", // Topic MQTT
-            useSSL: false,             // Set true jika port SSL HTTPS (misal 8084)
-            deviceId: "860987054243453"
+        // KONFIGURASI API MONACOLISA
+        const API_CONFIG = {
+            baseUrl: "https://monacolisa.fulindo.co.id/api/energy",
+            apiKey: "monacolisa_energy_api_2026",
+            deviceImei: "860987054243453"
         };
 
         // VARIABEL GLOBAL
-        let allTelemetryData = [];
-        let currentFilteredData = [];
+        let telemetryData = [];
         let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
-        
-        let currentPage = 1;
-        let pageSize = 25;
-        let isPaused = false;
-        let mqttClient = null;
 
-        // =========================================================
-        // INISIALISASI KONEKSI PAHO MQTT VIA WEBSOCKETS
-        // =========================================================
-        function initMQTT() {
-            const clientId = "SmartE_Web_" + Math.random().toString(16).substr(2, 8);
-            mqttClient = new Paho.MQTT.Client(MQTT_CONFIG.host, Number(MQTT_CONFIG.port), clientId);
+        // FUNGSI UTAMA UNTUK FETCH DATA DARI REST API
+        async function fetchEnergyData() {
+            const dateVal = document.getElementById('start-date').value;
+            const limitVal = document.getElementById('limit-size').value;
+            
+            updateStatusBadge("Fetching API...", "amber");
 
-            mqttClient.onConnectionLost = onConnectionLost;
-            mqttClient.onMessageArrived = onMessageArrived;
-
-            const options = {
-                timeout: 5,
-                useSSL: MQTT_CONFIG.useSSL,
-                cleanSession: true,
-                onSuccess: onConnectSuccess,
-                onFailure: onConnectFailure
-            };
-
-            updateStatusBadge("Connecting to Broker...", "amber");
-            mqttClient.connect(options);
-        }
-
-        function onConnectSuccess() {
-            updateStatusBadge(`Connected (${MQTT_CONFIG.host})`, "emerald");
-            mqttClient.subscribe(MQTT_CONFIG.topic);
-            console.log("✅ Terhubung ke MQTT Broker & Subscribed to:", MQTT_CONFIG.topic);
-        }
-
-        function onConnectFailure(err) {
-            updateStatusBadge("Broker Disconnected", "red");
-            console.error("❌ Gagal Terhubung ke Broker MQTT:", err);
-            // Reconnect otomatis tiap 5 detik jika gagal
-            setTimeout(initMQTT, 5000);
-        }
-
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                updateStatusBadge("Connection Lost. Reconnecting...", "red");
-                console.warn("⚠️ Koneksi MQTT Terputus:", responseObject.errorMessage);
-                setTimeout(initMQTT, 3000);
-            }
-        }
-
-        // =========================================================
-        // PROSES MESSAGES MASUK SECARA REAL-TIME
-        // =========================================================
-        function onMessageArrived(message) {
-            if (isPaused) return;
+            const url = `${API_CONFIG.baseUrl}?device_imei=${API_CONFIG.deviceImei}&tanggal=${dateVal}&limit=${limitVal}&sort=DESC`;
 
             try {
-                const payload = JSON.parse(message.payloadString);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-KEY': API_CONFIG.apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error ${response.status}`);
+                }
+
+                const result = await response.json();
                 
-                // Tambahkan timestamp lokal jika sensor tidak mengirimkan timestamp
-                if (!payload.timestamp) {
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const day = String(now.getDate()).padStart(2, '0');
-                    const hours = String(now.getHours()).padStart(2, '0');
-                    const mins = String(now.getMinutes()).padStart(2, '0');
-                    const secs = String(now.getSeconds()).padStart(2, '0');
-                    payload.timestamp = `${year}${month}${day}${hours}${mins}${secs}`;
+                if (result.status === 'success' && result.data) {
+                    telemetryData = result.data;
+                    document.getElementById('total-records').innerText = result.pagination?.total_records || telemetryData.length;
+                    
+                    renderUI();
+                    
+                    const nowTime = new Date();
+                    updateStatusBadge(`Updated (${nowTime.toTimeString().split(' ')[0]})`, "emerald");
+                } else {
+                    showErrorTable("Tidak ada data ditemukan untuk parameter ini.");
+                    updateStatusBadge("No Data", "amber");
                 }
 
-                // Sisipkan data baru ke paling depan array (Data Terbaru)
-                allTelemetryData.unshift(payload);
-
-                // Batasi array memori browser max 200 data agar tidak berat
-                if (allTelemetryData.length > 200) {
-                    allTelemetryData.pop();
-                }
-
-                // Perbarui Tampilan UI secara Instant
-                filterAndRenderData();
-
-                const nowTime = new Date();
-                document.getElementById('sync-badge').innerText = `Live Stream: ${nowTime.toTimeString().split(' ')[0]}`;
-
-            } catch (e) {
-                console.error("Payload masuk bukan JSON valid:", e);
+            } catch (error) {
+                console.error("Gagal mengambil data REST API:", error);
+                showErrorTable(`Gagal terhubung ke API: ${error.message}`);
+                updateStatusBadge("API Connection Error", "red");
             }
         }
 
-        // =========================================================
-        // FILTER & RENDER DATA KE TABEL & GRAFIK
-        // =========================================================
-        function filterAndRenderData() {
-            const startVal = document.getElementById('start-date').value;
-            const endVal = document.getElementById('end-date').value;
-
-            if (!startVal || !endVal) {
-                currentFilteredData = [...allTelemetryData];
-            } else {
-                const startCompact = startVal.replace(/-/g, '') + '000000';
-                const endCompact = endVal.replace(/-/g, '') + '235959';
-
-                currentFilteredData = allTelemetryData.filter(item => {
-                    return item.timestamp >= startCompact && item.timestamp <= endCompact;
-                });
-            }
-
-            document.getElementById('total-records').innerText = currentFilteredData.length;
-
-            if (currentFilteredData.length === 0) {
-                document.getElementById('telemetry-table-body').innerHTML = `<tr><td colspan="16" class="py-8 text-center text-gray-400">Belum ada data telemetry masuk.</td></tr>`;
-                resetCards();
-                renderCharts([]);
-                renderPaginationControls(0);
+        // RENDER KARTU METRIK, TABEL, DAN GRAFIK
+        function renderUI() {
+            if (telemetryData.length === 0) {
+                showErrorTable("Data telemetri kosong.");
                 return;
             }
 
-            // Metrik Kartu
-            const latest = currentFilteredData[0].measurement || {};
+            // Metrik Kartu (Data Paling Terkini/Index 0)
+            const latest = telemetryData[0].measurement || {};
             const v = latest.voltage_v || { a: 0, b: 0, c: 0 };
             const i = latest.current_a || { a: 0, b: 0, c: 0 };
             const pf = latest.power_factor || { total: 0 };
@@ -361,10 +281,10 @@
             document.getElementById('card-pf').innerHTML = `${pf.total ?? 0} <span class="text-sm text-gray-400 font-normal">/ ${latest.frequency_hz || 0}Hz</span>`;
 
             let sumThdV = 0, sumThdI = 0, countThd = 0;
-            currentFilteredData.forEach(item => {
+            telemetryData.forEach(item => {
                 const m = item.measurement || {};
-                const tv = m.thd_voltage_pct || m.thd_v || { a: 0, b: 0, c: 0 };
-                const ti = m.thd_current_pct || m.thd_i || { a: 0, b: 0, c: 0 };
+                const tv = m.thd_voltage_pct || { a: 0, b: 0, c: 0 };
+                const ti = m.thd_current_pct || { a: 0, b: 0, c: 0 };
                 
                 sumThdV += ((tv.a || 0) + (tv.b || 0) + (tv.c || 0)) / 3;
                 sumThdI += ((ti.a || 0) + (ti.b || 0) + (ti.c || 0)) / 3;
@@ -374,36 +294,26 @@
             document.getElementById('avg-thd-v').innerText = countThd > 0 ? (sumThdV / countThd).toFixed(2) + '%' : '0%';
             document.getElementById('avg-thd-i').innerText = countThd > 0 ? (sumThdI / countThd).toFixed(2) + '%' : '0%';
 
-            renderTablePage();
-            renderCharts(currentFilteredData);
+            renderTable();
+            renderCharts(telemetryData);
         }
 
-        function renderTablePage() {
+        function renderTable() {
             const tbody = document.getElementById('telemetry-table-body');
             tbody.innerHTML = '';
 
-            const totalItems = currentFilteredData.length;
-            const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-            if (currentPage > totalPages) currentPage = totalPages;
-
-            const startIndex = (currentPage - 1) * pageSize;
-            const pageData = currentFilteredData.slice(startIndex, startIndex + pageSize);
-
-            pageData.forEach((item, index) => {
+            telemetryData.forEach((item, index) => {
                 const m = item.measurement || {};
                 const v = m.voltage_v || { a: 0, b: 0, c: 0 };
                 const i = m.current_a || { a: 0, b: 0, c: 0 };
                 const p = m.active_power_w || { a: 0, b: 0, c: 0, total: 0 };
                 const pf = m.power_factor || { total: 0 };
-                const tv = m.thd_voltage_pct || m.thd_v || { a: 0, b: 0, c: 0 };
-
-                const pTotalCalculated = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
+                const tv = m.thd_voltage_pct || { a: 0, b: 0, c: 0 };
 
                 const row = document.createElement('tr');
                 row.className = index === 0 ? "bg-emerald-50/70 font-medium border-b border-gray-100" : "hover:bg-gray-50 border-b border-gray-100 transition-colors";
                 row.innerHTML = `
-                    <td class="py-2.5 px-3 border-r border-gray-200 text-gray-500">${startIndex + index + 1}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200 text-gray-500">${index + 1}</td>
                     <td class="py-2.5 px-4 border-r border-gray-200 font-mono text-left">${formatWaktuTabel(item.timestamp)}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${v.a ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${v.b ?? 0}</td>
@@ -413,7 +323,7 @@
                     <td class="py-2.5 px-3 border-r border-gray-200">${i.c ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${p.a ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${p.b ?? 0}</td>
-                    <td class="py-2.5 px-3 border-r border-gray-200 font-bold">${pTotalCalculated}</td>
+                    <td class="py-2.5 px-3 border-r border-gray-200 font-bold">${p.total ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${pf.total ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${m.frequency_hz ?? 0}</td>
                     <td class="py-2.5 px-3 border-r border-gray-200">${tv.a ?? 0}</td>
@@ -422,45 +332,11 @@
                 `;
                 tbody.appendChild(row);
             });
-
-            renderPaginationControls(totalPages);
         }
 
-        function renderPaginationControls(totalPages) {
-            const container = document.getElementById('pagination-controls');
-            container.innerHTML = '';
-
-            if (totalPages <= 1) return;
-
-            const btnClass = "px-2.5 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 font-medium text-gray-600 disabled:opacity-40";
-            const activeClass = "px-2.5 py-1 border border-teal-600 bg-teal-50 text-teal-700 font-bold rounded";
-
-            container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(1)" class="${btnClass}">First</button>`;
-            container.innerHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})" class="${btnClass}">Prev</button>`;
-
-            let startP = Math.max(1, currentPage - 2);
-            let endP = Math.min(totalPages, startP + 4);
-
-            for (let p = startP; p <= endP; p++) {
-                if (p === currentPage) {
-                    container.innerHTML += `<button class="${activeClass}">${p}</button>`;
-                } else {
-                    container.innerHTML += `<button onclick="goToPage(${p})" class="${btnClass}">${p}</button>`;
-                }
-            }
-
-            container.innerHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})" class="${btnClass}">Next</button>`;
-        }
-
-        function goToPage(page) {
-            currentPage = page;
-            renderTablePage();
-        }
-
-        function changePageSize() {
-            pageSize = parseInt(document.getElementById('page-size').value);
-            currentPage = 1;
-            renderTablePage();
+        function showErrorTable(msg) {
+            const tbody = document.getElementById('telemetry-table-body');
+            tbody.innerHTML = `<tr><td colspan="16" class="py-8 text-center text-red-500 font-medium">${msg}</td></tr>`;
         }
 
         function updateStatusBadge(text, color) {
@@ -492,58 +368,32 @@
             return `${ts.substring(0,4)}-${ts.substring(4,6)}-${ts.substring(6,8)} ${ts.substring(8,10)}:${ts.substring(10,12)}:${ts.substring(12,14)}`;
         }
 
-        function togglePause() {
-            isPaused = !isPaused;
-            const btn = document.getElementById('btn-pause');
-            if (isPaused) {
-                btn.innerHTML = `▶ Resume Feed`;
-                btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-300');
-            } else {
-                btn.innerHTML = `⏸ Pause Feed`;
-                btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-300');
-            }
-        }
-
-        function clearData() {
-            allTelemetryData = [];
-            filterAndRenderData();
-        }
-
         function exportCSV() {
-            if (currentFilteredData.length === 0) return alert("Buffer data kosong!");
+            if (telemetryData.length === 0) return alert("Data kosong!");
             let csv = 'No,Timestamp,Tegangan_A,Tegangan_B,Tegangan_C,Arus_A,Arus_B,Arus_C,Daya_A,Daya_B,Daya_Total,PF_Total,Frekuensi,THD_V_A,THD_V_B,THD_V_C\n';
-            currentFilteredData.forEach((item, index) => {
+            telemetryData.forEach((item, index) => {
                 const m = item.measurement || {};
                 const v = m.voltage_v || {};
                 const i = m.current_a || {};
                 const p = m.active_power_w || {};
                 const pf = m.power_factor || {};
-                const tv = m.thd_voltage_pct || m.thd_v || {};
-                const pTotal = p.total ?? ((p.a || 0) + (p.b || 0) + (p.c || 0));
-                csv += `${index + 1},"${formatWaktuTabel(item.timestamp)}",${v.a||0},${v.b||0},${v.c||0},${i.a||0},${i.b||0},${i.c||0},${p.a||0},${p.b||0},${pTotal},${pf.total||0},${m.frequency_hz||0},${tv.a||0},${tv.b||0},${tv.c||0}\n`;
+                const tv = m.thd_voltage_pct || {};
+                csv += `${index + 1},"${formatWaktuTabel(item.timestamp)}",${v.a||0},${v.b||0},${v.c||0},${i.a||0},${i.b||0},${i.c||0},${p.a||0},${p.b||0},${p.total||0},${pf.total||0},${m.frequency_hz||0},${tv.a||0},${tv.b||0},${tv.c||0}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `Realtime_MQTT_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `Monacolisa_Energy_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function resetCards() {
-            document.getElementById('card-voltage').innerHTML = `0 <span class="text-base text-gray-400">V</span>`;
-            document.getElementById('card-current').innerHTML = `0 <span class="text-base text-gray-400">A</span>`;
-            document.getElementById('avg-thd-v').innerText = `0%`;
-            document.getElementById('avg-thd-i').innerText = `0%`;
-            document.getElementById('card-pf').innerHTML = `0 PF`;
         }
 
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            elements: { line: { tension: 0.2 }, point: { radius: 1.5 } },
+            elements: { line: { tension: 0.2 }, point: { radius: 2 } },
             interaction: { mode: 'index', intersect: false },
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Poppins', size: 10 } } } },
             scales: {
@@ -561,10 +411,7 @@
             if (chartTHDI) chartTHDI.destroy();
             if (chartFreq) chartFreq.destroy();
 
-            if (dataList.length === 0) return;
-
-            const slicedData = dataList.slice(0, 20); 
-            const chartData = [...slicedData].reverse();
+            const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
             chartV = new Chart(document.getElementById('chartVoltage'), {
@@ -622,9 +469,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'THD V (A)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#a855f7', borderWidth: 1.5 },
-                        { label: 'THD V (B)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#ec4899', borderWidth: 1.5 },
-                        { label: 'THD V (C)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#6366f1', borderWidth: 1.5 }
+                        { label: 'THD V (A)', data: chartData.map(d => d.measurement?.thd_voltage_pct?.a ?? 0), borderColor: '#a855f7', borderWidth: 1.5 },
+                        { label: 'THD V (B)', data: chartData.map(d => d.measurement?.thd_voltage_pct?.b ?? 0), borderColor: '#ec4899', borderWidth: 1.5 },
+                        { label: 'THD V (C)', data: chartData.map(d => d.measurement?.thd_voltage_pct?.c ?? 0), borderColor: '#6366f1', borderWidth: 1.5 }
                     ]
                 },
                 options: commonOptions
@@ -635,9 +482,9 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'THD I (A)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#f97316', borderWidth: 1.5 },
-                        { label: 'THD I (B)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#eab308', borderWidth: 1.5 },
-                        { label: 'THD I (C)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#84cc16', borderWidth: 1.5 }
+                        { label: 'THD I (A)', data: chartData.map(d => d.measurement?.thd_current_pct?.a ?? 0), borderColor: '#f97316', borderWidth: 1.5 },
+                        { label: 'THD I (B)', data: chartData.map(d => d.measurement?.thd_current_pct?.b ?? 0), borderColor: '#eab308', borderWidth: 1.5 },
+                        { label: 'THD I (C)', data: chartData.map(d => d.measurement?.thd_current_pct?.c ?? 0), borderColor: '#84cc16', borderWidth: 1.5 }
                     ]
                 },
                 options: commonOptions
@@ -655,15 +502,17 @@
             });
         }
 
-        // INISIALISASI SAAT HALAMAN DIBUKA
+        // INISIALISASI HALAMAN
         window.onload = () => {
             const now = new Date();
             const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
             document.getElementById('start-date').value = today;
-            document.getElementById('end-date').value = today;
-            document.getElementById('display-device-id').innerText = MQTT_CONFIG.deviceId;
+            document.getElementById('display-device-id').innerText = API_CONFIG.deviceImei;
 
-            initMQTT();
+            fetchEnergyData();
+
+            // Auto refresh setiap 30 detik
+            setInterval(fetchEnergyData, 30000);
         };
     </script>
 </body>
