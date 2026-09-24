@@ -486,7 +486,7 @@
             }
         };
 
- function renderCharts(dataList) {
+        function renderCharts(dataList) {
             if (chartV) chartV.destroy();
             if (chartI) chartI.destroy();
             if (chartP) chartP.destroy();
@@ -525,64 +525,6 @@
                 },
                 options: commonOptions
             });
-
-    chartP = new Chart(document.getElementById('chartPowerPhase'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Fasa R', data: chartData.map(d => d.measurement?.active_power_w?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                { label: 'Fasa S', data: chartData.map(d => d.measurement?.active_power_w?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                { label: 'Fasa T', data: chartData.map(d => d.measurement?.active_power_w?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
-            ]
-        },
-        options: commonOptions 
-    });
-
-    chartPF = new Chart(document.getElementById('chartPF'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{ label: 'PF Total', data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.1)', borderWidth: 2, fill: true }]
-        },
-        options: commonOptions
-    });
-
-    chartTHDV = new Chart(document.getElementById('chartTHDV'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'THD V (Fasa R)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                { label: 'THD V (Fasa S)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                { label: 'THD V (Fasa T)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
-            ]
-        },
-        options: commonOptions
-    });
-
-    chartTHDI = new Chart(document.getElementById('chartTHDI'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'THD I (Fasa R)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
-                { label: 'THD I (Fasa S)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
-                { label: 'THD I (Fasa T)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
-            ]
-        },
-        options: commonOptions
-    });
-
-    chartFreq = new Chart(document.getElementById('chartFrequency'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{ label: 'Frekuensi (Hz)', data: chartData.map(d => d.measurement?.frequency_hz ?? 0), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true }]
-        },
-        options: commonOptions
-    });
-}
 
             chartP = new Chart(document.getElementById('chartPowerPhase'), {
                 type: 'line',
