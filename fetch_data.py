@@ -1,104 +1,100 @@
 import json
+import os
 import time
 from datetime import datetime
-import requests
+import paho.mqtt.client as mqtt
 
-# KONFIGURASI
-API_URL = "https://api.example.com/v1/telemetry"  # Ganti dengan URL API target
-DEVICE_ID = "860987054243453"
+# ==========================================
+# KONFIGURASI MQTT (Sesuaikan dengan Broker Mas Fikri / PDF)
+# ==========================================
+MQTT_BROKER = "broker.hivemq.com"  # Ganti IP/Host broker (contoh: 103.xxx.xxx.xxx)
+MQTT_PORT = 1883
+MQTT_TOPIC = "smarte/tps_lidah_wetan/telemetry"  # Topic MQTT sensor
+MQTT_USER = ""  # Isi jika broker butuh username
+MQTT_PASS = ""  # Isi jika broker butuh password
+
 OUTPUT_FILE = "data.json"
-TIMEOUT_SECONDS = 10
-
-# Header request (tambahkan Token jika API butuh autentikasi)
-HEADERS = {
-    "User-Agent": "SmartE-Fetcher/1.0",
-    "Content-Type": "application/json",
-    # "Authorization": "Bearer TOKEN_KAMU_DI_SINI"
-}
+MAX_RECORDS = 100  # Maksimal simpan N data terakhir agar file tetap ringan
 
 
-def get_default_dates():
-    """Mengembalikan tanggal hari ini format YYYY-MM-DD"""
-    today = datetime.now().strftime("%Y-%m-%d")
-    return today, today
+def load_existing_data():
+    """Membaca data lama dari file JSON jika ada"""
+    if os.path.exists(OUTPUT_FILE):
+        try:
+            with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data if isinstance(data, list) else []
+        except Exception:
+            return []
+    return []
 
 
-def fetch_and_save_data(start_date=None, end_date=None):
-    """Mengambil data dari API backend dan menyimpannya ke data.json"""
+def save_data(data_list):
+    """Menyimpan list data ke data.json"""
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(data_list, f, indent=2, ensure_ascii=False)
 
-    if not start_date or not end_date:
-        start_date, end_date = get_default_dates()
 
-    # Parameter query string yang dikirim ke API
-    params = {
-        "device_id": DEVICE_ID,
-        "start_date": start_date,
-        "end_date": end_date,
-        "limit": 100,
-    }
-
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Mengambil data dari API...")
-
-    try:
-        response = requests.get(
-            API_URL, headers=HEADERS, params=params, timeout=TIMEOUT_SECONDS
+def on_connect(client, userdata, flags, rc, properties=None):
+    """Callback saat berhasil konek ke MQTT Broker"""
+    if rc == 0:
+        print(
+            f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Terhubung ke MQTT Broker ({MQTT_BROKER})"
         )
+        client.subscribe(MQTT_TOPIC)
+        print(f"📡 Mendengarkan real-time data di topic: '{MQTT_TOPIC}'...")
+    else:
+        print(f"❌ Gagal konek ke broker. Code: {rc}")
 
-        # Cek status HTTP (200 OK)
-        response.raise_for_status()
 
-        data = response.json()
-
-        # Normalisasi struktur data jika API mengembalikan wrap objek {'data': [...]}
-        if isinstance(data, dict) and "data" in data:
-            telemetry_list = data["data"]
-        elif isinstance(data, list):
-            telemetry_list = data
-        else:
-            telemetry_list = []
-
-        # Simpan hasil fetch ke file data.json
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-            json.dump(telemetry_list, f, indent=4, ensure_ascii=False)
+def on_message(client, userdata, msg):
+    """Callback saat ada payload telemetri baru masuk dari sensor"""
+    try:
+        payload_str = msg.payload.decode("utf-8")
+        payload_json = json.loads(payload_str)
 
         print(
-            f"✅ Berhasil! {len(telemetry_list)} record disimpan ke '{OUTPUT_FILE}'."
+            f"[{datetime.now().strftime('%H:%M:%S')}] 📥 Data Real-Time Masuk!"
         )
-        return True
 
-    except requests.exceptions.Timeout:
-        print("❌ Error: Request Timeout. Server tidak merespons.")
-    except requests.exceptions.HTTPError as err:
-        print(f"❌ Error HTTP {response.status_code}: {err}")
-    except requests.exceptions.RequestException as err:
-        print(f"❌ Error Koneksi: {err}")
+        # Ambil data lama, sisipkan data terbaru ke urutan paling atas (index 0)
+        existing_data = load_existing_data()
+        existing_data.insert(0, payload_json)
+
+        # Batasi jumlah array
+        existing_data = existing_data[:MAX_RECORDS]
+
+        # Simpan pembaruan ke data.json
+        save_data(existing_data)
+        print(f"💾 Data tersimpan di '{OUTPUT_FILE}'.")
+
     except json.JSONDecodeError:
-        print("❌ Error: Respon dari server bukan format JSON yang valid.")
-    except Exception as err:
-        print(f"❌ Error Tidak Terduga: {err}")
-
-    return False
+        print("⚠️ Payload yang masuk bukan format JSON yang valid.")
+    except Exception as e:
+        print(f"❌ Error pemrosesan data: {e}")
 
 
-def run_scheduler(interval_seconds=10):
-    """Jalankan fetcher secara terus menerus tiap N detik"""
-    print(
-        f"Memulai Service Fetcher untuk Device [{DEVICE_ID}] (Interval: {interval_seconds}s)..."
-    )
-    print("Tekan Ctrl+C untuk menghentikan.\n")
+def main():
+    # Inisialisasi MQTT Client
+    client_id = f"SmartE_Fetcher_{int(time.time())}"
+    client = mqtt.Client(client_id=client_id)
 
+    if MQTT_USER and MQTT_PASS:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    print("🚀 Memulai Real-Time Fetcher...")
     try:
-        while True:
-            fetch_and_save_data()
-            time.sleep(interval_seconds)
+        client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+        # loop_forever membuat script terus berjalan & memproses data secara real-time
+        client.loop_forever()
     except KeyboardInterrupt:
-        print("\nService Fetcher dihentikan.")
+        print("\n⏹️ Service real-time dihentikan.")
+    except Exception as e:
+        print(f"❌ Koneksi terputus/error: {e}")
 
 
 if __name__ == "__main__":
-    # Jalankan sekali langsung fetch data hari ini:
-    fetch_and_save_data()
-
-    # Jika ingin jalankan otomatis terus-menerus tiap 10 detik,
-    # hapus tanda baris di bawah ini:
-    # run_scheduler(interval_seconds=10)
+    main()
