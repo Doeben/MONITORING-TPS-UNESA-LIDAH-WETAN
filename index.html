@@ -21,7 +21,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
-    <!-- FULL WIDTH HEADER -->
+    <!-- HEADER DASHBOARD -->
     <header class="bg-teal-900 text-white shadow-lg pt-6 pb-16 px-4 md:px-8">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-5">
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <!-- KARTU METRIK -->
+        <!-- KARTU METRIK RINGKASAN -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
                 <p class="text-sm text-gray-500 font-medium">Tegangan Rerata</p>
@@ -94,8 +94,10 @@
             </div>
         </div>
 
-        <!-- GRAFIK 2x2 -->
+        <!-- GRID GRAFIK LENGKAP (7 GRAFIK) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- 1. Tegangan 3-Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
                     Tegangan 3-Fasa
@@ -104,6 +106,7 @@
                 <div class="h-60"><canvas id="chartVoltage"></canvas></div>
             </div>
 
+            <!-- 2. Arus Listrik 3-Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
                     Arus Listrik 3-Fasa
@@ -112,6 +115,7 @@
                 <div class="h-60"><canvas id="chartCurrent"></canvas></div>
             </div>
 
+            <!-- 3. Daya Aktif per Fasa -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
                     Daya Aktif per Fasa
@@ -120,14 +124,42 @@
                 <div class="h-60"><canvas id="chartPowerPhase"></canvas></div>
             </div>
 
-            <!-- GRAFIK THD TEGANGAN PER FASA -->
+            <!-- 4. Power Factor Total -->
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                 <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-                    THD Tegangan per Fasa
+                    Power Factor Total (Cos φ)
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">PF Total</span>
+                </h3>
+                <div class="h-60"><canvas id="chartPF"></canvas></div>
+            </div>
+
+            <!-- 5. THD Tegangan per Fasa -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    THD Tegangan (THD Voltage)
                     <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
                 </h3>
-                <div class="h-60"><canvas id="chartTHD"></canvas></div>
+                <div class="h-60"><canvas id="chartTHDV"></canvas></div>
             </div>
+
+            <!-- 6. THD Arus per Fasa -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    THD Arus (THD Current)
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Persentase (%)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartTHDI"></canvas></div>
+            </div>
+
+            <!-- 7. Frekuensi Listrik -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+                <h3 class="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                    Frekuensi Listrik (Frequency)
+                    <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded">Hertz (Hz)</span>
+                </h3>
+                <div class="h-60"><canvas id="chartFrequency"></canvas></div>
+            </div>
+
         </div>
 
         <!-- TABEL DATA -->
@@ -157,7 +189,7 @@
 
     <script>
         let allTelemetryData = [];
-        let chartV, chartI, chartP, chartTHD;
+        let chartV, chartI, chartP, chartPF, chartTHDV, chartTHDI, chartFreq;
 
         function formatLabelChart(ts) {
             if (!ts || ts.length < 14) return ts;
@@ -240,7 +272,6 @@
             let sumThdV = 0, sumThdI = 0, countThd = 0;
             filteredData.forEach(item => {
                 const m = item.measurement || {};
-                // MENDUKUNG BERBAGAI NAMA VAR JSON (thd_voltage_pct ATAU thd_v)
                 const tv = m.thd_voltage_pct || m.thd_v || { a: 0, b: 0, c: 0 };
                 const ti = m.thd_current_pct || m.thd_i || { a: 0, b: 0, c: 0 };
                 
@@ -281,7 +312,6 @@
             document.getElementById('card-pf').innerHTML = `0 PF`;
         }
 
-        // Konfigurasi umum chart
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
@@ -303,14 +333,17 @@
             if (chartV) chartV.destroy();
             if (chartI) chartI.destroy();
             if (chartP) chartP.destroy();
-            if (chartTHD) chartTHD.destroy();
+            if (chartPF) chartPF.destroy();
+            if (chartTHDV) chartTHDV.destroy();
+            if (chartTHDI) chartTHDI.destroy();
+            if (chartFreq) chartFreq.destroy();
 
             if (dataList.length === 0) return;
 
             const chartData = [...dataList].reverse();
             const labels = chartData.map(d => formatLabelChart(d.timestamp));
 
-            // Chart 1: Tegangan
+            // 1. Chart Tegangan
             chartV = new Chart(document.getElementById('chartVoltage'), {
                 type: 'line',
                 data: {
@@ -324,7 +357,7 @@
                 options: commonOptions
             });
 
-            // Chart 2: Arus
+            // 2. Chart Arus
             chartI = new Chart(document.getElementById('chartCurrent'), {
                 type: 'line',
                 data: {
@@ -338,7 +371,7 @@
                 options: commonOptions
             });
 
-            // Chart 3: Daya Aktif
+            // 3. Chart Daya Aktif
             chartP = new Chart(document.getElementById('chartPowerPhase'), {
                 type: 'line',
                 data: {
@@ -352,38 +385,66 @@
                 options: commonOptions 
             });
 
-            // Chart 4: THD TEGANGAN PER FASA (Membaca thd_voltage_pct)
-            chartTHD = new Chart(document.getElementById('chartTHD'), {
+            // 4. Chart Power Factor Total (Cos φ)
+            chartPF = new Chart(document.getElementById('chartPF'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
                         { 
-                            label: 'THD V (Fasa R)', 
-                            data: chartData.map(d => {
-                                const m = d.measurement || {};
-                                const tv = m.thd_voltage_pct || m.thd_v || {};
-                                return tv.a ?? 0;
-                            }), 
-                            borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true
-                        },
+                            label: 'PF Total', 
+                            data: chartData.map(d => d.measurement?.power_factor?.total ?? 0), 
+                            borderColor: '#0284c7', 
+                            backgroundColor: 'rgba(2, 132, 199, 0.1)', 
+                            borderWidth: 2, 
+                            fill: true 
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 5. Chart THD Tegangan
+            chartTHDV = new Chart(document.getElementById('chartTHDV'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'THD V (Fasa R)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'THD V (Fasa S)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'THD V (Fasa T)', data: chartData.map(d => (d.measurement?.thd_voltage_pct || d.measurement?.thd_v)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 6. Chart THD Arus
+            chartTHDI = new Chart(document.getElementById('chartTHDI'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'THD I (Fasa R)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.a ?? 0), borderColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'THD I (Fasa S)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.b ?? 0), borderColor: '#10b981', borderWidth: 2 },
+                        { label: 'THD I (Fasa T)', data: chartData.map(d => (d.measurement?.thd_current_pct || d.measurement?.thd_i)?.c ?? 0), borderColor: '#f43f5e', borderWidth: 2 }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 7. Chart Frekuensi Listrik
+            chartFreq = new Chart(document.getElementById('chartFrequency'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
                         { 
-                            label: 'THD V (Fasa S)', 
-                            data: chartData.map(d => {
-                                const m = d.measurement || {};
-                                const tv = m.thd_voltage_pct || m.thd_v || {};
-                                return tv.b ?? 0;
-                            }), 
-                            borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true
-                        },
-                        { 
-                            label: 'THD V (Fasa T)', 
-                            data: chartData.map(d => {
-                                const m = d.measurement || {};
-                                const tv = m.thd_voltage_pct || m.thd_v || {};
-                                return tv.c ?? 0;
-                            }), 
-                            borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true
+                            label: 'Frekuensi (Hz)', 
+                            data: chartData.map(d => d.measurement?.frequency_hz ?? 0), 
+                            borderColor: '#10b981', 
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+                            borderWidth: 2, 
+                            fill: true 
                         }
                     ]
                 },
